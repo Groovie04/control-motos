@@ -5,10 +5,8 @@ export default function RueddaControlArrendamiento() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [activeTab, setActiveTab] = useState<'ventas' | 'pagos' | 'metricas' | 'semanal'>('ventas');
   
-  // Estado para controlar la visibilidad del modal de nueva venta
   const [showModal, setShowModal] = useState<boolean>(false);
 
-  // Listas base persistentes y ampliables dinámicamente
   const [listaConcesionarios, setListaConcesionarios] = useState([
     'Motores Del Este VIP C.A.',
     'Urdaneta Motors 2025 C.A.',
@@ -20,18 +18,18 @@ export default function RueddaControlArrendamiento() {
     'SUPER MOTOS TROPICAL C.A'
   ]);
 
-  const [listaMarcas, setListaMarcas] = useState([
-    'Escuda',
-    'Empire Keeway',
-    'Haojue',
-    'Bera'
-  ]);
-
   const [listaMotos, setListaMotos] = useState([
     'F16-EXTREME',
     'CG-HERO',
     'EXPRESS-150',
     'WORKER-200'
+  ]);
+
+  const [listaMarcas] = useState([
+    'Escuda',
+    'Keeway',
+    'Empire',
+    'Bera'
   ]);
 
   const [listaPlanes] = useState([
@@ -50,18 +48,31 @@ export default function RueddaControlArrendamiento() {
     'Sábado'
   ]);
 
-  // Fecha actual en formato YYYY-MM-DD para el input tipo date nativo
-  const obtenerFechaISOActual = () => {
+  // Obtener fecha actual en formato YYYY-MM-DD para el input type="date"
+  const obtenerFechaInput = () => {
     const d = new Date();
-    return d.toISOString().split('T')[0];
+    const anio = d.getFullYear();
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const dia = String(d.getDate()).padStart(2, '0');
+    return `${anio}-${mes}-${dia}`;
   };
 
-  // Estado del formulario de nueva venta en el orden solicitado
+  // Convertir formato YYYY-MM-DD a DD/MM/YYYY para mostrar en tablas
+  const formatearFechaDisplay = (fechaIso: string) => {
+    if (!fechaIso) return '';
+    const partes = fechaIso.split('-');
+    if (partes.length === 3) {
+      return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+    return fechaIso;
+  };
+
   const [nuevaVenta, setNuevaVenta] = useState({
-    fecha: obtenerFechaISOActual(),
+    fecha: obtenerFechaInput(),
     concesionario: 'Motores Del Este VIP C.A.',
     plan: '6 Meses - Semanal',
     cliente: '',
+    telefono: '',
     inicial: 0,
     cuota: 'Lunes',
     canon: 0,
@@ -74,11 +85,10 @@ export default function RueddaControlArrendamiento() {
     proyeccionInteres: 0
   });
 
-  // Estado del Registro Maestro de Flota / Ventas
   const [flota, setFlota] = useState([
-    { fecha: '2026-08-10', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Alberto Rafael Salas Martinez', inicial: 440.00, cuota: 'Lunes', canon: 109.27, marca: 'Escuda', moto: 'F16-EXTREME', imei: '863874086467440', certificado: 'AA-1278490', costoConcesionario: 1600.00, pagoConcesionario: 1160.00, proyeccionInteres: 2305.56 },
-    { fecha: '2026-08-11', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Freddy David Perez Peña', inicial: 277.75, cuota: 'Martes', canon: 68.98, marca: 'Escuda', moto: 'CG-HERO', imei: '863874086280066', certificado: 'AA-1329061', costoConcesionario: 1010.00, pagoConcesionario: 732.25, proyeccionInteres: 1455.97 },
-    { fecha: '2026-08-11', concesionario: 'INVERSIONES CHT30, C.A', plan: '6 Meses - Semanal', cliente: 'Marcos Sleyder Bozo Perez', inicial: 506.00, cuota: 'Viernes', canon: 125.66, marca: 'Escuda', moto: 'F16-EXTREME', imei: '863874086467614', certificado: 'AA-1329414', costoConcesionario: 1840.00, pagoConcesionario: 1334.00, proyezccionInteres: 2651.39 }
+    { fecha: '10/08/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Alberto Rafael Salas Martinez', telefono: '584167171297', inicial: 440.00, cuota: 'Lunes', canon: 109.27, marca: 'Escuda', moto: 'F16-EXTREME', fechaCorte: '13/08/2026', imei: '863874086467440', certificado: 'AA-1278490', costoConcesionario: 1600.00, pagoConcesionario: 1160.00, proyeccionInteres: 1462.56 },
+    { fecha: '11/08/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Freddy David Perez Peña', telefono: '584126034365', inicial: 277.75, cuota: 'Martes', canon: 68.98, marca: 'Escuda', moto: 'CG-HERO', fechaCorte: '', imei: '863874086280066', certificado: 'AA-1329061', costoConcesionario: 1010.00, pagoConcesionario: 732.25, proyeccionInteres: 923.15 },
+    { fecha: '11/08/2026', concesionario: 'INVERSIONES CHT30, C.A', plan: '6 Meses - Semanal', cliente: 'Marcos Sleyder Bozo Perez', telefono: '584243571388', inicial: 506.00, cuota: 'Viernes', canon: 125.66, marca: 'Escuda', moto: 'F16-EXTREME', fechaCorte: '', imei: '863874086467614', certificado: 'AA-1329414', costoConcesionario: 1840.00, pagoConcesionario: 1334.00, proyeccionInteres: 1681.94 }
   ]);
 
   const [sedesConfig, setSedesConfig] = useState([
@@ -93,36 +103,27 @@ export default function RueddaControlArrendamiento() {
   ]);
 
   // Recálculo automático de Pago Concesionario y Proyección de Interés
-  const actualizarCalculosFormulario = (cambios: Partial<typeof nuevaVenta>) => {
-    const estadoActualizado = { ...nuevaVenta, ...cambios };
-    const costo = Number(estadoActualizado.costoConcesionario) || 0;
-    const inicial = Number(estadoActualizado.inicial) || 0;
+  const actualizarCalculosFinancieros = (datosParciales: any) => {
+    const costo = Number(datosParciales.costoConcesionario ?? nuevaVenta.costoConcesionario) || 0;
+    const inicial = Number(datosParciales.inicial ?? nuevaVenta.inicial) || 0;
     
     // Pago Concesionario = Costo Concesionario - Inicial
-    const pagoAuto = Math.max(0, costo - inicial);
+    const pagoConcesionario = Math.max(0, costo - inicial);
 
-    // Proyección de Interés = (costo_concesionario * 91.41%) + costo_concesionario - inicial - pago_concesionario
-    const proyeccionAuto = (costo * 0.9141) + costo - inicial - pagoAuto;
+    // Proyección de Interés = Costo Concesionario * 91.41% + Costo Concesionario - Inicial - Pago Concesionario
+    const proyeccionInteres = (costo * 0.9141) + costo - inicial - pagoConcesionario;
 
     setNuevaVenta({
-      ...estadoActualizado,
-      pagoConcesionario: Number(pagoAuto.toFixed(2)),
-      proyeccionInteres: Number(proyeccionAuto.toFixed(2))
+      ...nuevaVenta,
+      ...datosParciales,
+      pagoConcesionario,
+      proyeccionInteres
     });
   };
 
   const handleFlotaChange = (index: number, field: string, value: any) => {
     const nuevaFlota = [...flota];
     nuevaFlota[index] = { ...nuevaFlota[index], [field]: value };
-    
-    // Si modifican costo, inicial o pago en la tabla, recalcular proyección automáticamente si aplica
-    if (['costoConcesionario', 'inicial', 'pagoConcesionario'].includes(field)) {
-      const c = Number(nuevaFlota[index].costoConcesionario) || 0;
-      const i = Number(nuevaFlota[index].inicial) || 0;
-      const p = Number(nuevaFlota[index].pagoConcesionario) || 0;
-      nuevaFlota[index].proyeccionInteres = Number(((c * 0.9141) + c - i - p).toFixed(2));
-    }
-
     setFlota(nuevaFlota);
   };
 
@@ -132,7 +133,6 @@ export default function RueddaControlArrendamiento() {
     setSedesConfig(nuevas);
   };
 
-  // Registrar nueva venta desde el modal y guardar nuevos ítems en listas si aplican
   const handleAgregarVentaSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!nuevaVenta.cliente || !nuevaVenta.imei) {
@@ -143,25 +143,25 @@ export default function RueddaControlArrendamiento() {
     if (!listaConcesionarios.includes(nuevaVenta.concesionario)) {
       setListaConcesionarios([...listaConcesionarios, nuevaVenta.concesionario]);
     }
-    if (!listaMarcas.includes(nuevaVenta.marca)) {
-      setListaMarcas([...listaMarcas, nuevaVenta.marca]);
-    }
+
     if (!listaMotos.includes(nuevaVenta.moto)) {
       setListaMotos([...listaMotos, nuevaVenta.moto]);
     }
 
     const itemAAgregar = {
-      fecha: nuevaVenta.fecha || obtenerFechaISOActual(),
+      fecha: formatearFechaDisplay(nuevaVenta.fecha) || '25/09/2026',
       concesionario: nuevaVenta.concesionario,
       plan: nuevaVenta.plan,
       cliente: nuevaVenta.cliente,
+      telefono: nuevaVenta.telefono,
       inicial: Number(nuevaVenta.inicial) || 0,
       cuota: nuevaVenta.cuota,
       canon: Number(nuevaVenta.canon) || 0,
       marca: nuevaVenta.marca,
       moto: nuevaVenta.moto,
+      fechaCorte: '',
       imei: nuevaVenta.imei,
-      certificado: nuevaVenta.certificado || ('AA-' + Math.floor(100000 + Math.random() * 900000)),
+      certificado: nuevaVenta.certificado || 'AA-' + Math.floor(100000 + Math.random() * 900000),
       costoConcesionario: Number(nuevaVenta.costoConcesionario) || 0,
       pagoConcesionario: Number(nuevaVenta.pagoConcesionario) || 0,
       proyeccionInteres: Number(nuevaVenta.proyeccionInteres) || 0
@@ -170,10 +170,11 @@ export default function RueddaControlArrendamiento() {
     setFlota([itemAAgregar, ...flota]);
     setShowModal(false);
     setNuevaVenta({
-      fecha: obtenerFechaISOActual(),
+      fecha: obtenerFechaInput(),
       concesionario: listaConcesionarios[0],
       plan: listaPlanes[0],
       cliente: '',
+      telefono: '',
       inicial: 0,
       cuota: listaDias[0],
       canon: 0,
@@ -275,10 +276,10 @@ export default function RueddaControlArrendamiento() {
           </button>
         </div>
 
-        {/* MODAL / CUADRO CON CALENDARIO, ORDEN EXACTO Y CÁLCULOS AUTOMÁTICOS */}
+        {/* MODAL CON EL ORDEN EXACTO Y CALENDARIO DESPLEGABLE */}
         {showModal && (
           <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-            <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '10px', padding: '25px', width: '680px', maxWidth: '90%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
+            <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '10px', padding: '25px', width: '680px', maxWidth: '92%', maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', borderBottom: `1px solid ${borderColor}`, paddingBottom: '10px' }}>
                 <h3 style={{ margin: 0, color: '#D96B27', fontSize: '17px' }}>Registrar Nueva Venta de Flota 💚</h3>
                 <button onClick={() => setShowModal(false)} style={{ background: 'transparent', border: 'none', color: textMain, fontSize: '18px', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
@@ -286,14 +287,14 @@ export default function RueddaControlArrendamiento() {
 
               <form onSubmit={handleAgregarVentaSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
                 
-                {/* 1. FECHA (Calendario desplegable nativo) */}
+                {/* 1. FECHA (Calendario desplegable automático) */}
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Fecha</label>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Fecha (Calendario)</label>
                   <input 
                     type="date" 
                     value={nuevaVenta.fecha} 
-                    onChange={e => actualizarCalculosFormulario({ fecha: e.target.value })} 
-                    style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} 
+                    onChange={e => actualizarCalculosFinancieros({ fecha: e.target.value })} 
+                    style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px', colorScheme: isDark ? 'dark' : 'light' }} 
                     required 
                   />
                 </div>
@@ -303,7 +304,7 @@ export default function RueddaControlArrendamiento() {
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Concesionario</label>
                   <select 
                     value={nuevaVenta.concesionario} 
-                    onChange={e => actualizarCalculosFormulario({ concesionario: e.target.value })} 
+                    onChange={e => actualizarCalculosFinancieros({ concesionario: e.target.value })} 
                     style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }}>
                     {listaConcesionarios.map((c, i) => (
                       <option key={i} value={c}>{c}</option>
@@ -316,7 +317,7 @@ export default function RueddaControlArrendamiento() {
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Plan</label>
                   <select 
                     value={nuevaVenta.plan} 
-                    onChange={e => actualizarCalculosFormulario({ plan: e.target.value })} 
+                    onChange={e => actualizarCalculosFinancieros({ plan: e.target.value })} 
                     style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }}>
                     {listaPlanes.map((p, i) => (
                       <option key={i} value={p}>{p}</option>
@@ -326,22 +327,28 @@ export default function RueddaControlArrendamiento() {
 
                 {/* 4. NOMBRE DEL CLIENTE */}
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Nombre del Cliente</label>
-                  <input type="text" placeholder="Nombre completo" value={nuevaVenta.cliente} onChange={e => actualizarCalculosFormulario({ cliente: e.target.value })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} required />
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Nombre del cliente</label>
+                  <input type="text" placeholder="Nombre completo" value={nuevaVenta.cliente} onChange={e => actualizarCalculosFinancieros({ cliente: e.target.value })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} required />
                 </div>
 
-                {/* 5. INICIAL ($) */}
+                {/* 5. NÚMERO DEL CLIENTE */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Número del cliente</label>
+                  <input type="text" placeholder="Ej: 584126000000" value={nuevaVenta.telefono} onChange={e => actualizarCalculosFinancieros({ telefono: e.target.value })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                </div>
+
+                {/* 6. INICIAL */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Inicial ($)</label>
-                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.inicial || ''} onChange={e => actualizarCalculosFormulario({ inicial: parseFloat(e.target.value) || 0 })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.inicial || ''} onChange={e => actualizarCalculosFinancieros({ inicial: parseFloat(e.target.value) || 0 })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
                 </div>
 
-                {/* 6. DÍA DE CUOTA */}
+                {/* 7. DÍA DE CUOTA */}
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Día de Cuota</label>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Día de cuota</label>
                   <select 
                     value={nuevaVenta.cuota} 
-                    onChange={e => actualizarCalculosFormulario({ cuota: e.target.value })} 
+                    onChange={e => actualizarCalculosFinancieros({ cuota: e.target.value })} 
                     style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }}>
                     {listaDias.map((d, i) => (
                       <option key={i} value={d}>{d}</option>
@@ -349,18 +356,18 @@ export default function RueddaControlArrendamiento() {
                   </select>
                 </div>
 
-                {/* 7. CANON SEMANAL ($) */}
+                {/* 8. CANON SEMANAL */}
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Canon Semanal ($)</label>
-                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.canon || ''} onChange={e => actualizarCalculosFormulario({ canon: parseFloat(e.target.value) || 0 })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Canon semanal ($)</label>
+                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.canon || ''} onChange={e => actualizarCalculosFinancieros({ canon: parseFloat(e.target.value) || 0 })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
                 </div>
 
-                {/* 8. MARCA */}
+                {/* 9. MARCA */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Marca</label>
                   <select 
                     value={nuevaVenta.marca} 
-                    onChange={e => actualizarCalculosFormulario({ marca: e.target.value })} 
+                    onChange={e => actualizarCalculosFinancieros({ marca: e.target.value })} 
                     style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }}>
                     {listaMarcas.map((m, i) => (
                       <option key={i} value={m}>{m}</option>
@@ -368,12 +375,12 @@ export default function RueddaControlArrendamiento() {
                   </select>
                 </div>
 
-                {/* 9. MOTO */}
+                {/* 10. MOTO */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Moto</label>
                   <select 
                     value={nuevaVenta.moto} 
-                    onChange={e => actualizarCalculosFormulario({ moto: e.target.value })} 
+                    onChange={e => actualizarCalculosFinancieros({ moto: e.target.value })} 
                     style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }}>
                     {listaMotos.map((m, i) => (
                       <option key={i} value={m}>{m}</option>
@@ -381,27 +388,27 @@ export default function RueddaControlArrendamiento() {
                   </select>
                 </div>
 
-                {/* 10. IMEI GPS */}
+                {/* 11. IMEI GPS */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>IMEI GPS</label>
-                  <input type="text" placeholder="Número de IMEI" value={nuevaVenta.imei} onChange={e => actualizarCalculosFormulario({ imei: e.target.value })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} required />
+                  <input type="text" placeholder="Número de IMEI" value={nuevaVenta.imei} onChange={e => actualizarCalculosFinancieros({ imei: e.target.value })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} required />
                 </div>
 
-                {/* 11. N° DE CERTIFICADO */}
+                {/* 12. N° DE CERTIFICADO */}
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>N° de Certificado</label>
-                  <input type="text" placeholder="Ej: AA-1278490 (Opcional)" value={nuevaVenta.certificado} onChange={e => actualizarCalculosFormulario({ certificado: e.target.value })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>N° de certificado</label>
+                  <input type="text" placeholder="Ej: AA-1278490 (Auto si se deja vacío)" value={nuevaVenta.certificado} onChange={e => actualizarCalculosFinancieros({ certificado: e.target.value })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
                 </div>
 
-                {/* 12. COSTO CONCESIONARIO ($) */}
+                {/* 13. COSTO CONCESIONARIO */}
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Costo Concesionario ($)</label>
-                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.costoConcesionario || ''} onChange={e => actualizarCalculosFormulario({ costoConcesionario: parseFloat(e.target.value) || 0 })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Costo concesionario ($)</label>
+                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.costoConcesionario || ''} onChange={e => actualizarCalculosFinancieros({ costoConcesionario: parseFloat(e.target.value) || 0 })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
                 </div>
 
-                {/* 13. PAGO A CONCESIONARIO ($ Automático) */}
+                {/* 14. PAGO A CONCESIONARIO (Automático: Costo - Inicial) */}
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8, color: '#10b981', fontWeight: 'bold' }}>Pago a Concesionario ($ automático)</label>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8, color: '#10b981', fontWeight: 'bold' }}>Pago a concesionario ($ automático)</label>
                   <input 
                     type="number" 
                     step="0.01" 
@@ -411,15 +418,15 @@ export default function RueddaControlArrendamiento() {
                   />
                 </div>
 
-                {/* 14. PROYECCIÓN DEL INTERÉS ($ Automático) */}
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8, color: '#38bdf8', fontWeight: 'bold' }}>Proyección del Interés ($)</label>
+                {/* 15. PROYECCIÓN DEL INTERÉS (Cálculo automático exacto) */}
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8, color: '#38bdf8', fontWeight: 'bold' }}>Proyección del interés ($ automático: Costo*91.41% + Costo - Inicial - Pago Concesionario)</label>
                   <input 
                     type="number" 
                     step="0.01" 
                     value={nuevaVenta.proyeccionInteres || 0} 
                     readOnly
-                    style={{ width: '100%', background: isDark ? '#162330' : '#e0f2fe', color: '#38bdf8', border: `1px solid #38bdf8`, padding: '8px', borderRadius: '4px', fontWeight: 'bold' }} 
+                    style={{ width: '100%', background: isDark ? '#162235' : '#e0f2fe', color: '#38bdf8', border: `1px solid #38bdf8`, padding: '8px', borderRadius: '4px', fontWeight: 'bold' }} 
                   />
                 </div>
 
@@ -450,6 +457,7 @@ export default function RueddaControlArrendamiento() {
                   <th style={{ padding: '10px' }}>Concesionario</th>
                   <th style={{ padding: '10px' }}>Plan</th>
                   <th style={{ padding: '10px' }}>Nombre del Cliente</th>
+                  <th style={{ padding: '10px' }}>Nro. Cliente</th>
                   <th style={{ padding: '10px' }}>Inicial</th>
                   <th style={{ padding: '10px' }}>Día Cuota</th>
                   <th style={{ padding: '10px' }}>Canon Semanal</th>
@@ -465,21 +473,22 @@ export default function RueddaControlArrendamiento() {
               <tbody>
                 {flota.map((item, index) => (
                   <tr key={index} style={{ borderBottom: `1px solid ${borderColor}`, background: index % 2 === 0 ? (isDark ? '#1e1e1e' : '#ffffff') : (isDark ? '#161616' : '#f8fafc') }}>
-                    <td style={{ padding: '6px' }}><input type="date" value={item.fecha} onChange={(e) => handleFlotaChange(index, 'fecha', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '125px' }} /></td>
+                    <td style={{ padding: '6px' }}><input type="text" value={item.fecha} onChange={(e) => handleFlotaChange(index, 'fecha', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="text" value={item.concesionario} onChange={(e) => handleFlotaChange(index, 'concesionario', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '150px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="text" value={item.plan} onChange={(e) => handleFlotaChange(index, 'plan', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '110px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="text" value={item.cliente} onChange={(e) => handleFlotaChange(index, 'cliente', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '150px' }} /></td>
+                    <td style={{ padding: '6px' }}><input type="text" value={item.telefono} onChange={(e) => handleFlotaChange(index, 'telefono', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '100px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="number" value={item.inicial} onChange={(e) => handleFlotaChange(index, 'inicial', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '80px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="text" value={item.cuota} onChange={(e) => handleFlotaChange(index, 'cuota', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '75px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="number" value={item.canon} onChange={(e) => handleFlotaChange(index, 'canon', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '80px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="text" value={item.marca} onChange={(e) => handleFlotaChange(index, 'marca', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="text" value={item.moto} onChange={(e) => handleFlotaChange(index, 'moto', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="text" value={item.imei} onChange={(e) => handleFlotaChange(index, 'imei', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '110px' }} /></td>
-                    <td style={{ padding: '6px' }}><input type="text" value={item.certificado} onChange={(e) => handleFlotaChange(index, 'certificado', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '95px' }} /></td>
+                    <td style={{ padding: '6px' }}><input type="text" value={item.certificado} onChange={(e) => handleFlotaChange(index, 'certificado', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="number" value={item.costoConcesionario} onChange={(e) => handleFlotaChange(index, 'costoConcesionario', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="number" value={item.pagoConcesionario} onChange={(e) => handleFlotaChange(index, 'pagoConcesionario', parseFloat(e.target.value))} style={{ background: inputBg, color: '#10b981', fontWeight: 'bold', border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
                     <td style={{ padding: '6px', color: '#38bdf8', fontWeight: 'bold' }}>
-                      ${Number(item.proyeccionInteres || 0).toFixed(2)}
+                      ${(Number(item.proyeccionInteres) || 0).toFixed(2)}
                     </td>
                   </tr>
                 ))}
@@ -490,16 +499,16 @@ export default function RueddaControlArrendamiento() {
 
         {/* 2. VENTANA: REPORTE DE PAGO */}
         {activeTab === 'pagos' && (
-          <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '20px', maxWidth: '900px', boxShadow: isDark ? 'none' : '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+          <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '20px', maxWidth: '900px' }}>
             <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', color: '#D96B27' }}>Sincronización y Liquidación por Sede</h3>
-            <p style={{ fontSize: '12px', opacity: 0.6, margin: '0 0 16px 0' }}>Los datos se agrupan y calculan dinámicamente según las ventas añadidas.</p>
+            <p style={{ fontSize: '12px', opacity: 0.6, margin: '0 0 16px 0' }}>Cálculos consolidados por concesionario en tiempo real.</p>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
               <thead>
                 <tr style={{ background: isDark ? '#1c1c38' : '#e2e8f0', color: textMain, borderBottom: '2px solid #D96B27' }}>
                   <th style={{ padding: '10px' }}>SEDE / CONCESIONARIO</th>
                   <th style={{ padding: '10px' }}>Ventas</th>
                   <th style={{ padding: '10px' }}>Pago Corte (Auto)</th>
-                  <th style={{ padding: '10px' }}>Comisión 1% (Auto)</th>
+                  <th style={{ padding: '10px' }}>Comisión 1%</th>
                   <th style={{ padding: '10px' }}>Penalización</th>
                 </tr>
               </thead>
@@ -561,31 +570,8 @@ export default function RueddaControlArrendamiento() {
                 <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0 0 0', color: '#10b981' }}>${totalCostoConcesionario.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</h2>
               </div>
               <div style={{ background: cardBg, border: `1px solid ${borderColor}`, padding: '20px', borderRadius: '8px', borderLeft: '4px solid #38bdf8' }}>
-                <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Proyección Total de Interés</p>
+                <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Proyección Total Interés</p>
                 <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0 0 0', color: '#38bdf8' }}>${totalProyeccionInteres.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</h2>
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-              <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '20px' }}>
-                <h4 style={{ margin: '0 0 12px 0', fontSize: '15px', color: '#D96B27' }}>Ventas por Concesionario</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {sedesCalculadas.map((s, idx) => (
-                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', padding: '6px 0', borderBottom: `1px solid ${borderColor}` }}>
-                      <span>{s.sede}</span>
-                      <strong style={{ color: '#D96B27' }}>{s.ventasCount} un.</strong>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '20px' }}>
-                <h4 style={{ margin: '0 0 12px 0', fontSize: '15px', color: '#D96B27' }}>Modelo de Moto Destacado</h4>
-                <div style={{ padding: '20px', background: isDark ? '#222' : '#f1f5f9', borderRadius: '6px', textAlign: 'center' }}>
-                  <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Líder en Ventas:</p>
-                  <h3 style={{ color: '#10b981', margin: '8px 0 0 0' }}>CG-HERO & F16-EXTREME</h3>
-                  <span style={{ fontSize: '11px', background: '#D96B27', color: '#fff', padding: '2px 6px', borderRadius: '4px', display: 'inline-block', marginTop: '8px' }}>Escuda (Stock Activo)</span>
-                </div>
               </div>
             </div>
           </div>
@@ -596,27 +582,11 @@ export default function RueddaControlArrendamiento() {
           <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '20px', maxWidth: '850px' }}>
             <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#D96B27' }}>RUEDDA* - Resumen Ejecutivo de Cánones y Cobranza</h3>
             <p style={{ fontSize: '13px', lineHeight: '1.6', opacity: 0.9 }}>
-              Período de análisis activo. Las nuevas incorporaciones alimentan el reporte semanal automáticamente.
+              Seguimiento semanal de cobranzas y proyecciones financieras automatizadas.
             </p>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px', marginTop: '20px' }}>
-              <div style={{ background: isDark ? '#222' : '#f1f5f9', padding: '15px', borderRadius: '6px', borderLeft: '3px solid #10b981' }}>
-                <p style={{ margin: '0 0 4px 0', fontSize: '11px', opacity: 0.7 }}>Cánones Pagados a Tiempo</p>
-                <h3 style={{ margin: 0, color: '#10b981' }}>83.18%</h3>
-              </div>
-              <div style={{ background: isDark ? '#222' : '#f1f5f9', padding: '15px', borderRadius: '6px', borderLeft: '3px solid #38bdf8' }}>
-                <p style={{ margin: '0 0 4px 0', fontSize: '11px', opacity: 0.7 }}>Cánones Adelantados</p>
-                <h3 style={{ margin: 0, color: '#38bdf8' }}>5.60%</h3>
-              </div>
-              <div style={{ background: isDark ? '#222' : '#f1f5f9', padding: '15px', borderRadius: '6px', borderLeft: '3px solid #ef4444' }}>
-                <p style={{ margin: '0 0 4px 0', fontSize: '11px', opacity: 0.7 }}>Índice de Impago</p>
-                <h3 style={{ margin: 0, color: '#ef4444' }}>10.28%</h3>
-              </div>
-            </div>
-
-            <div style={{ marginTop: '25px', padding: '14px', background: isDark ? '#1c1c38' : '#e0f2fe', borderRadius: '6px', borderLeft: '3px solid #0284c7' }}>
+            <div style={{ marginTop: '20px', padding: '14px', background: isDark ? '#1c1c38' : '#e0f2fe', borderRadius: '6px', borderLeft: '3px solid #0284c7' }}>
               <p style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: isDark ? '#38bdf8' : '#0369a1' }}>
-                💡 Estado del Sistema: Proyección total de intereses de la flota: <strong style={{ color: '#38bdf8' }}>${totalProyeccionInteres.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</strong> 🚗💨
+                💡 Proyección de Interés Acumulada de la Flota: <strong style={{ color: '#38bdf8' }}>${totalProyeccionInteres.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</strong> 🚗💨
               </p>
             </div>
           </div>
