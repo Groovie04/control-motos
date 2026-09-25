@@ -4,6 +4,25 @@ import { useState, useMemo } from 'react';
 export default function RueddaControlArrendamiento() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [activeTab, setActiveTab] = useState<'ventas' | 'pagos' | 'metricas' | 'semanal'>('ventas');
+  
+  // Estado para controlar la visibilidad del modal / cuadro de nueva venta
+  const [showModal, setShowModal] = useState<boolean>(false);
+
+  // Estado del formulario de nueva venta
+  const [nuevaVenta, setNuevaVenta] = useState({
+    fecha: '',
+    concesionario: 'Motores Del Este VIP C.A.',
+    plan: '6 Meses - Semanal',
+    cliente: '',
+    telefono: '',
+    cuota: 'Lunes',
+    canon: 0,
+    inicial: 0,
+    moto: 'F16-EXTREME',
+    imei: '',
+    costoConcesionario: 0,
+    pagoConcesionario: 0
+  });
 
   // Estado del Registro Maestro de Flota / Ventas
   const [flota, setFlota] = useState([
@@ -14,7 +33,7 @@ export default function RueddaControlArrendamiento() {
     { fecha: '12/08/2026', concesionario: 'NECATIX C.A', plan: '6 Meses - Semanal', cliente: 'Carlos Eduardo Gomez', telefono: '584129876543', cuota: 'Jueves', canon: 95.00, inicial: 380.00, marca: 'Escuda', moto: 'F16-EXTREME', fechaCorte: '', imei: '863874086499111', certificado: 'AA-1329500', costoConcesionario: 1400.00, pagoConcesionario: 1000.00 }
   ]);
 
-  // Configuración base de Sedes / Concesionarios (Penalizaciones editables)
+  // Configuración base de Sedes / Concesionarios
   const [sedesConfig, setSedesConfig] = useState([
     { sede: 'Motores Del Este VIP C.A.', pen: 0.00 },
     { sede: 'Urdaneta Motors 2025 C.A.', pen: 0.00 },
@@ -38,18 +57,68 @@ export default function RueddaControlArrendamiento() {
     setSedesConfig(nuevas);
   };
 
-  // Interconexión y cálculo automático por Sede (Pago Corte y Comisión 1%)
+  // Manejador para registrar la nueva venta desde el cuadro
+  const handleAgregarVentaSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nuevaVenta.cliente || !nuevaVenta.imei) {
+      alert('Por favor ingresa al menos el Nombre del Cliente y el IMEI GPS.');
+      return;
+    }
+
+    const itemAAgregar = {
+      fecha: nuevaVenta.fecha || new Date().toLocaleDateString(),
+      concesionario: nuevaVenta.concesionario,
+      plan: nuevaVenta.plan,
+      cliente: nuevaVenta.cliente,
+      telefono: nuevaVenta.telefono,
+      cuota: nuevaVenta.cuota,
+      canon: Number(nuevaVenta.canon) || 0,
+      inicial: Number(nuevaVenta.inicial) || 0,
+      marca: 'Escuda',
+      moto: nuevaVenta.moto,
+      fechaCorte: '',
+      imei: nuevaVenta.imei,
+      certificado: 'AA-' + Math.floor(100000 + Math.random() * 900000),
+      costoConcesionario: Number(nuevaVenta.costoConcesionario) || 0,
+      pagoConcesionario: Number(nuevaVenta.pagoConcesionario) || 0
+    };
+
+    // Asegurarse de que si la sede no está en sedesConfig, aparezca o se acumule
+    setFlota([itemAAgregar, ...flota]);
+    setShowModal(false);
+    // Limpiar formulario o resetear valores básicos
+    setNuevaVenta({
+      fecha: '',
+      concesionario: 'Motores Del Este VIP C.A.',
+      plan: '6 Meses - Semanal',
+      cliente: '',
+      telefono: '',
+      cuota: 'Lunes',
+      canon: 0,
+      inicial: 0,
+      moto: 'F16-EXTREME',
+      imei: '',
+      costoConcesionario: 0,
+      pagoConcesionario: 0
+    });
+  };
+
+  // Interconexión y cálculo automático por Sede
   const sedesCalculadas = useMemo(() => {
-    return sedesConfig.map((s) => {
-      const itemsSede = flota.filter((item) => item.concesionario.trim().toLowerCase() === s.sede.trim().toLowerCase());
-      
+    // Extraer todas las sedes únicas (incluyendo las añadidas dinámicamente)
+    const sedesUnicas = Array.from(new Set([...sedesConfig.map(s => s.sede), ...flota.map(f => f.concesionario)]));
+
+    return sedesUnicas.map((sedeNombre) => {
+      const configExistente = sedesConfig.find(s => s.sede.trim().toLowerCase() === sedeNombre.trim().toLowerCase());
+      const penVal = configExistente ? configExistente.pen : 0;
+
+      const itemsSede = flota.filter((item) => item.concesionario.trim().toLowerCase() === sedeNombre.trim().toLowerCase());
       const totalPagoCorte = itemsSede.reduce((sum, item) => sum + (Number(item.pagoConcesionario) || 0), 0);
-      
-      // Comisión calculada automáticamente como el 1% del costo del concesionario de cada unidad vendida
       const totalComision = itemsSede.reduce((sum, item) => sum + ((Number(item.costoConcesionario) || 0) * 0.01), 0);
 
       return {
-        ...s,
+        sede: sedeNombre,
+        pen: penVal,
         pagoCorte: totalPagoCorte,
         comision: totalComision,
         ventasCount: itemsSede.length
@@ -114,20 +183,94 @@ export default function RueddaControlArrendamiento() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', borderBottom: `2px solid ${isDark ? '#333' : '#e2e8f0'}`, paddingBottom: '12px' }}>
           <h1 style={{ fontSize: '20px', fontWeight: 'bold', margin: 0 }}>
             {activeTab === 'ventas' && 'Control de Ventas y Registro Maestro de Flota'}
-            {activeTab === 'pagos' && 'Reporte de Pago y Liquidación por Sedes (Comisiones 1% Interconectadas)'}
+            {activeTab === 'pagos' && 'Reporte de Pago y Liquidación por Sedes'}
             {activeTab === 'metricas' && 'Métricas de Venta y Distribución Ruedda'}
             {activeTab === 'semanal' && 'Reporte Semanal de Cánones y Cobranza'}
           </h1>
-          <div style={{ background: '#D96B27', color: '#fff', padding: '6px 14px', borderRadius: '6px', fontWeight: 'bold', fontSize: '13px' }}>
-            R* 🚗💨
-          </div>
+          <button 
+            onClick={() => setShowModal(true)} 
+            style={{ background: '#D96B27', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
+            ➕ Registrar Nueva Venta 🚗💨
+          </button>
         </div>
+
+        {/* MODAL / CUADRO PARA REGISTRAR NUEVA VENTA */}
+        {showModal && (
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+            <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '10px', padding: '25px', width: '600px', maxWidth: '90%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', borderBottom: `1px solid ${borderColor}`, paddingBottom: '10px' }}>
+                <h3 style={{ margin: 0, color: '#D96B27', fontSize: '17px' }}>Registrar Nueva Venta de Flota</h3>
+                <button onClick={() => setShowModal(false)} style={{ background: 'transparent', border: 'none', color: textMain, fontSize: '18px', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
+              </div>
+
+              <form onSubmit={handleAgregarVentaSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Fecha</label>
+                  <input type="text" placeholder="Ej: 15/08/2026" value={nuevaVenta.fecha} onChange={e => setNuevaVenta({...nuevaVenta, fecha: e.target.value})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Concesionario</label>
+                  <input type="text" placeholder="Ej: Motores Del Este VIP C.A." value={nuevaVenta.concesionario} onChange={e => setNuevaVenta({...nuevaVenta, concesionario: e.target.value})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} required />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Plan</label>
+                  <input type="text" placeholder="Ej: 6 Meses - Semanal" value={nuevaVenta.plan} onChange={e => setNuevaVenta({...nuevaVenta, plan: e.target.value})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Nombre del Cliente</label>
+                  <input type="text" placeholder="Nombre completo" value={nuevaVenta.cliente} onChange={e => setNuevaVenta({...nuevaVenta, cliente: e.target.value})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} required />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Nro. Cliente (Teléfono)</label>
+                  <input type="text" placeholder="Ej: 584126000000" value={nuevaVenta.telefono} onChange={e => setNuevaVenta({...nuevaVenta, telefono: e.target.value})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Día de Cuota</label>
+                  <input type="text" placeholder="Ej: Lunes" value={nuevaVenta.cuota} onChange={e => setNuevaVenta({...nuevaVenta, cuota: e.target.value})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Canon Semanal ($)</label>
+                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.canon || ''} onChange={e => setNuevaVenta({...nuevaVenta, canon: parseFloat(e.target.value)})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Inicial ($)</label>
+                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.inicial || ''} onChange={e => setNuevaVenta({...nuevaVenta, inicial: parseFloat(e.target.value)})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Modelo de Moto</label>
+                  <input type="text" placeholder="Ej: CG-HERO o F16-EXTREME" value={nuevaVenta.moto} onChange={e => setNuevaVenta({...nuevaVenta, moto: e.target.value})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>IMEI GPS</label>
+                  <input type="text" placeholder="Número de IMEI" value={nuevaVenta.imei} onChange={e => setNuevaVenta({...nuevaVenta, imei: e.target.value})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} required />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Costo Concesionario ($)</label>
+                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.costoConcesionario || ''} onChange={e => setNuevaVenta({...nuevaVenta, costoConcesionario: parseFloat(e.target.value)})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Pago Concesionario ($)</label>
+                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.pagoConcesionario || ''} onChange={e => setNuevaVenta({...nuevaVenta, pagoConcesionario: parseFloat(e.target.value)})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                </div>
+
+                <div style={{ gridColumn: 'span 2', display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '15px' }}>
+                  <button type="button" onClick={() => setShowModal(false)} style={{ background: '#475569', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
+                    Cancelar
+                  </button>
+                  <button type="submit" style={{ background: '#10b981', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
+                    Guardar e Integrar Venta
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         {/* 1. VENTANA: CONTROL DE VENTAS */}
         {activeTab === 'ventas' && (
           <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '16px', overflowX: 'auto', boxShadow: isDark ? 'none' : '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-              <h3 style={{ margin: 0, fontSize: '15px', color: '#D96B27' }}>Matriz de Ventas (Con Comisión Automática al 1% del Costo)</h3>
+              <h3 style={{ margin: 0, fontSize: '15px', color: '#D96B27' }}>Matriz de Ventas y Unidades Registradas</h3>
               <span style={{ fontSize: '12px', opacity: 0.7 }}>Total Registros: {flota.length}</span>
             </div>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', whiteSpace: 'nowrap', textAlign: 'left' }}>
@@ -179,8 +322,8 @@ export default function RueddaControlArrendamiento() {
         {/* 2. VENTANA: REPORTE DE PAGO */}
         {activeTab === 'pagos' && (
           <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '20px', maxWidth: '900px', boxShadow: isDark ? 'none' : '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
-            <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', color: '#D96B27' }}>Sincronización y Liquidación por Sede (Comisiones al 1%)</h3>
-            <p style={{ fontSize: '12px', opacity: 0.6, margin: '0 0 16px 0' }}>El "Pago Corte" y las "Comisiones" se calculan y agrupan automáticamente desde la data de Ventas.</p>
+            <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', color: '#D96B27' }}>Sincronización y Liquidación por Sede</h3>
+            <p style={{ fontSize: '12px', opacity: 0.6, margin: '0 0 16px 0' }}>Los datos se agrupan y calculan dinámicamente según las ventas añadidas.</p>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
               <thead>
                 <tr style={{ background: isDark ? '#1c1c38' : '#e2e8f0', color: textMain, borderBottom: '2px solid #D96B27' }}>
@@ -210,13 +353,20 @@ export default function RueddaControlArrendamiento() {
                       <input 
                         type="number" 
                         value={item.pen} 
-                        onChange={(e) => handleSedeChange(index, 'pen', e.target.value)} 
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const indexCfg = sedesConfig.findIndex(s => s.sede === item.sede);
+                          if (indexCfg >= 0) {
+                            handleSedeChange(indexCfg, 'pen', val);
+                          } else {
+                            setSedesConfig([...sedesConfig, { sede: item.sede, pen: parseFloat(val) || 0 }]);
+                          }
+                        }} 
                         style={{ background: inputBg, color: '#ef4444', border: `1px solid ${inputBorder}`, padding: '6px', borderRadius: '4px', width: '90px', fontWeight: 'bold' }} 
                       />
                     </td>
                   </tr>
                 ))}
-                {/* Totales */}
                 <tr style={{ background: isDark ? '#262626' : '#f1f5f9', borderTop: '2px solid #D96B27', fontWeight: 'bold' }}>
                   <td style={{ padding: '12px', color: '#D96B27' }}>TOTALES GENERALES:</td>
                   <td style={{ padding: '12px', textAlign: 'center', color: '#D96B27' }}>{flota.length}</td>
@@ -265,7 +415,7 @@ export default function RueddaControlArrendamiento() {
                 <div style={{ padding: '20px', background: isDark ? '#222' : '#f1f5f9', borderRadius: '6px', textAlign: 'center' }}>
                   <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Líder en Ventas:</p>
                   <h3 style={{ color: '#10b981', margin: '8px 0 0 0' }}>CG-HERO & F16-EXTREME</h3>
-                  <span style={{ fontSize: '11px', background: '#D96B27', color: '#fff', padding: '2px 6px', borderRadius: '4px', display: 'inline-block', marginTop: '8px' }}>Escuda (100% Stock)</span>
+                  <span style={{ fontSize: '11px', background: '#D96B27', color: '#fff', padding: '2px 6px', borderRadius: '4px', display: 'inline-block', marginTop: '8px' }}>Escuda (Stock Activo)</span>
                 </div>
               </div>
             </div>
@@ -277,7 +427,7 @@ export default function RueddaControlArrendamiento() {
           <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '20px', maxWidth: '850px' }}>
             <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#D96B27' }}>RUEDDA* - Resumen Ejecutivo de Cánones y Cobranza</h3>
             <p style={{ fontSize: '13px', lineHeight: '1.6', opacity: 0.9 }}>
-              Período de análisis activo para el control semanal de flotas. Las comisiones y pagos se encuentran sincronizados directamente con las operaciones registradas.
+              Período de análisis activo. Las nuevas incorporaciones alimentan el reporte semanal automáticamente.
             </p>
             
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px', marginTop: '20px' }}>
