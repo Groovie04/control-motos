@@ -6,22 +6,14 @@ interface Contrato {
   id: number;
   fecha: string;
   concesionario: string;
-  plan: string;
   cliente: string;
   numeroCliente: string;
   inicial: number;
-  diaCuota: string;
   canonSemanal: number;
-  metodoPago: string;
-  marca: string;
   moto: string;
-  fechaCorte: string;
-  imeiGps: string;
   certificado: string;
-  costoConcesionario: number;
   pagoConcesionario: number;
   comisionVendedor: number;
-  proyeccionInteres: number;
 }
 
 const datosIniciales: Contrato[] = [
@@ -29,71 +21,46 @@ const datosIniciales: Contrato[] = [
     id: 1,
     fecha: '07/09/2026',
     concesionario: 'Motores Del Este VIP C.A.',
-    plan: '6 Meses - Semanal',
     cliente: 'Robert Alejandro Palacios Silva',
     numeroCliente: '584125922334',
     inicial: 341.00,
-    diaCuota: 'Lunes',
     canonSemanal: 84.69,
-    metodoPago: 'Efectivo',
-    marca: 'Escuda',
     moto: 'CG-HERO',
-    fechaCorte: '',
-    imeiGps: '863874086270265',
     certificado: 'AA-1329369',
-    costoConcesionario: 1240.00,
     pagoConcesionario: 899.00,
-    comisionVendedor: 12.40,
-    proyeccionInteres: 1133.48
+    comisionVendedor: 12.40
   },
   {
     id: 2,
     fecha: '11/09/2026',
     concesionario: 'Velocity Motos. C.A',
-    plan: '6 Meses - Semanal',
     cliente: 'Marcos Sleyder Bozo Perez',
     numeroCliente: '584243571388',
     inicial: 506.00,
-    diaCuota: 'Viernes',
     canonSemanal: 125.66,
-    metodoPago: 'Efectivo',
-    marca: 'Escuda',
     moto: 'F16-EXTREME',
-    fechaCorte: '',
-    imeiGps: '863874086467614',
     certificado: 'AA-1329414',
-    costoConcesionario: 1840.00,
     pagoConcesionario: 1334.00,
-    comisionVendedor: 18.40,
-    proyeccionInteres: 1681.94
+    comisionVendedor: 18.40
   },
   {
     id: 3,
     fecha: '14/09/2026',
     concesionario: 'INVERSIONES CHT30, C.A',
-    plan: '6 Meses - Semanal',
     cliente: 'Alexair Armando Marin Nuñez',
     numeroCliente: '584142038890',
     inicial: 341.00,
-    diaCuota: 'Lunes',
     canonSemanal: 84.69,
-    metodoPago: 'Efectivo',
-    marca: 'Escuda',
     moto: 'CG-HERO',
-    fechaCorte: '',
-    imeiGps: '863874086327164',
     certificado: 'AA-1329455',
-    costoConcesionario: 1240.00,
     pagoConcesionario: 899.00,
-    comisionVendedor: 12.40,
-    proyeccionInteres: 1133.48
+    comisionVendedor: 12.40
   }
 ];
 
-export default function RueddaToolsDashboard() {
+export default function RueddaApp() {
   const [contratos] = useState<Contrato[]>(datosIniciales);
-  const [menuActivo, setMenuActivo] = useState('control');
-  const [filtroConcesionario, setFiltroConcesionario] = useState('TODOS');
+  const [filtro, setFiltro] = useState('TODOS');
   const [busqueda, setBusqueda] = useState('');
 
   const listaConcesionarios = [
@@ -106,191 +73,130 @@ export default function RueddaToolsDashboard() {
     'NECATIX C.A'
   ];
 
-  const contratosFiltrados = contratos.filter(c => {
-    const coincideConces = filtroConcesionario === 'TODOS' || c.concesionario === filtroConcesionario;
-    const coincideBusq = c.cliente.toLowerCase().includes(busqueda.toLowerCase()) || c.numeroCliente.includes(busqueda);
-    return coincideConces && coincideBusq;
-  });
-
-  const resumenSedes = listaConcesionarios.map(sede => {
-    const itemsSede = contratos.filter(c => c.concesionario === sede);
-    const pagoCorte = itemsSede.reduce((acc, curr) => acc + curr.pagoConcesionario, 0);
-    const comision = itemsSede.reduce((acc, curr) => acc + curr.comisionVendedor, 0);
-    return { sede, pagoCorte, comision };
+  const filtrados = contratos.filter(c => {
+    const matchConces = filtro === 'TODOS' || c.concesionario === filtro;
+    const matchBusq = c.cliente.toLowerCase().includes(busqueda.toLowerCase());
+    return matchConces && matchBusq;
   });
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex font-sans">
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#090d16', color: '#f8fafc', fontFamily: 'sans-serif' }}>
       
-      {/* BARRA LATERAL ESTILO RIDERY */}
-      <aside className="w-64 bg-indigo-950 border-r border-indigo-900/50 flex flex-col justify-between hidden md:flex shadow-2xl">
+      {/* BARRA LATERAL */}
+      <div style={{ width: '260px', backgroundColor: '#0f172a', borderRight: '1px solid #1e293b', padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
         <div>
-          {/* Logo / Encabezado Sidebar */}
-          <div className="p-6 border-b border-indigo-900/50">
-            <h1 className="text-white font-black text-xl tracking-wider">RUEDDA</h1>
-            <p className="text-indigo-400 text-xs mt-0.5 font-medium">VENEZUELA • TOOLS</p>
-          </div>
-
-          {/* Menú de Navegación */}
-          <div className="p-4 space-y-2">
-            <p className="text-xs font-bold text-indigo-400 uppercase tracking-wider px-3 mb-2">Gestión de Flota</p>
-            
-            <button 
-              onClick={() => setMenuActivo('control')}
-              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold transition ${menuActivo === 'control' ? 'bg-indigo-600 text-white shadow-md' : 'text-indigo-300 hover:bg-indigo-900/50'}`}>
-              🏍️ Control de Arriendos
-            </button>
-            <button 
-              onClick={() => setMenuActivo('resumen')}
-              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold transition ${menuActivo === 'resumen' ? 'bg-indigo-600 text-white shadow-md' : 'text-indigo-300 hover:bg-indigo-900/50'}`}>
-              📊 Resumen y Comisiones
-            </button>
-            <button 
-              onClick={() => setMenuActivo('nuevo')}
-              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold transition ${menuActivo === 'nuevo' ? 'bg-indigo-600 text-white shadow-md' : 'text-indigo-300 hover:bg-indigo-900/50'}`}>
-              ➕ Formalizar Contrato
-            </button>
+          <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#ffffff', letterSpacing: '1px' }}>RUEDDA</h2>
+          <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px', marginBottom: '24px' }}>VENEZUELA • TOOLS</p>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', marginBottom: '4px' }}>Gestión de Flota</span>
+            <button style={{ textAlign: 'left', padding: '10px 14px', borderRadius: '8px', background: '#3b82f6', color: '#fff', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>🏍️ Control de Arriendos</button>
+            <button style={{ textAlign: 'left', padding: '10px 14px', borderRadius: '8px', background: 'transparent', color: '#94a3b8', border: 'none', cursor: 'pointer' }}>📊 Resumen y Sedes</button>
           </div>
         </div>
-
-        <div className="p-4 border-t border-indigo-900/50 text-xs text-indigo-400">
-          <p className="font-semibold text-white">David (CX)</p>
-          <p className="text-[10px] text-emerald-400 mt-0.5">● Sistema Activo 💚</p>
+        <div style={{ borderTop: '1px solid #1e293b', paddingTop: '16px', fontSize: '12px', color: '#94a3b8' }}>
+          <p style={{ fontWeight: 'bold', color: '#fff' }}>David (CX)</p>
+          <p style={{ color: '#10b981', marginTop: '2px' }}>● Sistema Activo 💚</p>
         </div>
-      </aside>
+      </div>
 
       {/* CONTENIDO PRINCIPAL */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowX: 'auto' }}>
         
-        {/* Barra Superior */}
-        <header className="bg-slate-900 border-b border-slate-800 px-6 py-4 flex justify-between items-center shadow-md">
+        {/* Header */}
+        <div style={{ padding: '20px 32px', backgroundColor: '#0f172a', borderBottom: '1px solid #1e293b', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2 className="text-xl font-bold text-white">Ruedda Tools - Control de Motos</h2>
-            <p className="text-xs text-slate-400">Panel unificado de arriendos, pagos a concesionarios y comisiones al 1%</p>
+            <h1 style={{ fontSize: '22px', fontWeight: 'bold', margin: 0 }}>Control de Arriendos & Opción a Compra</h1>
+            <p style={{ fontSize: '13px', color: '#94a3b8', margin: '4px 0 0 0' }}>Panel unificado de arriendos, pagos y comisiones al 1%</p>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs px-3 py-1 rounded-full font-bold">
-              ⚡ ACTIVO
-            </span>
-          </div>
-        </header>
+          <span style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' }}>
+            ⚡ ACTIVO
+          </span>
+        </div>
 
-        {/* Cuerpo Dinámico */}
-        <div className="p-6 space-y-6">
-
-          {/* Tarjetas de Estadísticas */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow">
-              <p className="text-slate-400 text-xs font-semibold uppercase">Cánones a Tiempo</p>
-              <p className="text-2xl font-black text-emerald-400 mt-1">83,2%</p>
+        {/* Cuerpo */}
+        <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          
+          {/* Métricas */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+            <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', padding: '20px', borderRadius: '12px' }}>
+              <p style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', margin: 0 }}>Cánones a Tiempo</p>
+              <p style={{ fontSize: '28px', fontWeight: '900', color: '#10b981', margin: '8px 0 0 0' }}>83,2%</p>
             </div>
-            <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow">
-              <p className="text-slate-400 text-xs font-semibold uppercase">Pendientes</p>
-              <p className="text-2xl font-black text-amber-400 mt-1">6,5%</p>
+            <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', padding: '20px', borderRadius: '12px' }}>
+              <p style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', margin: 0 }}>Pendientes</p>
+              <p style={{ fontSize: '28px', fontWeight: '900', color: '#f59e0b', margin: '8px 0 0 0' }}>6,5%</p>
             </div>
-            <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow">
-              <p className="text-slate-400 text-xs font-semibold uppercase">Impago</p>
-              <p className="text-2xl font-black text-rose-500 mt-1">10,3%</p>
+            <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', padding: '20px', borderRadius: '12px' }}>
+              <p style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', margin: 0 }}>Impago</p>
+              <p style={{ fontSize: '28px', fontWeight: '900', color: '#ef4444', margin: '8px 0 0 0' }}>10,3%</p>
             </div>
-            <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow">
-              <p className="text-slate-400 text-xs font-semibold uppercase">Modelo Estrella</p>
-              <p className="text-2xl font-black text-orange-400 mt-1">CG-HERO</p>
+            <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', padding: '20px', borderRadius: '12px' }}>
+              <p style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', margin: 0 }}>Modelo Estrella</p>
+              <p style={{ fontSize: '28px', fontWeight: '900', color: '#f97316', margin: '8px 0 0 0' }}>CG-HERO</p>
             </div>
           </div>
 
-          {/* Contenido principal según vista */}
-          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-            
-            {/* Tabla Principal de Contratos */}
-            <div className="xl:col-span-3 bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg">
-              <div className="p-4 bg-slate-900/80 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-3">
-                <h3 className="font-bold text-sm text-white">Registro de Arriendos & Flota Activa</h3>
-                <div className="flex gap-2 w-full sm:w-auto">
-                  <input 
-                    type="text" 
-                    placeholder="Buscar cliente..." 
-                    value={busqueda}
-                    onChange={(e) => setBusqueda(e.target.value)}
-                    className="bg-slate-950 border border-slate-700 text-xs px-3 py-1.5 rounded-lg text-white w-full sm:w-48"
-                  />
-                  <select 
-                    value={filtroConcesionario}
-                    onChange={(e) => setFiltroConcesionario(e.target.value)}
-                    className="bg-slate-950 border border-slate-700 text-xs px-3 py-1.5 rounded-lg text-white">
-                    <option value="TODOS">Todos</option>
-                    {listaConcesionarios.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </div>
+          {/* Tabla y Filtros */}
+          <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px', overflow: 'hidden' }}>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid #1e293b', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 'bold', margin: 0 }}>Registro de Flota Activa</h3>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <input 
+                  type="text" 
+                  placeholder="Buscar cliente..." 
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                  style={{ backgroundColor: '#020617', border: '1px solid #334155', color: '#fff', padding: '8px 12px', borderRadius: '6px', fontSize: '12px' }}
+                />
+                <select 
+                  value={filtro}
+                  onChange={(e) => setFiltro(e.target.value)}
+                  style={{ backgroundColor: '#020617', border: '1px solid #334155', color: '#fff', padding: '8px 12px', borderRadius: '6px', fontSize: '12px' }}>
+                  <option value="TODOS">Todos los Concesionarios</option>
+                  {listaConcesionarios.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
               </div>
+            </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs text-slate-300">
-                  <thead className="bg-indigo-900/60 text-indigo-200 uppercase">
-                    <tr>
-                      <th className="p-3">Fecha</th>
-                      <th className="p-3">Concesionario</th>
-                      <th className="p-3">Cliente</th>
-                      <th className="p-3">Teléfono</th>
-                      <th className="p-3">Inicial</th>
-                      <th className="p-3">Canon</th>
-                      <th className="p-3">Moto</th>
-                      <th className="p-3">Certificado</th>
-                      <th className="p-3">Pago Concesionario</th>
-                      <th className="p-3">Comisión 1%</th>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#1e293b', color: '#cbd5e1' }}>
+                    <th style={{ padding: '12px 16px' }}>Fecha</th>
+                    <th style={{ padding: '12px 16px' }}>Concesionario</th>
+                    <th style={{ padding: '12px 16px' }}>Cliente</th>
+                    <th style={{ padding: '12px 16px' }}>Teléfono</th>
+                    <th style={{ padding: '12px 16px' }}>Inicial</th>
+                    <th style={{ padding: '12px 16px' }}>Canon</th>
+                    <th style={{ padding: '12px 16px' }}>Moto</th>
+                    <th style={{ padding: '12px 16px' }}>Certificado</th>
+                    <th style={{ padding: '12px 16px' }}>Pago Concesionario</th>
+                    <th style={{ padding: '12px 16px' }}>Comisión 1%</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtrados.map((c) => (
+                    <tr key={c.id} style={{ borderBottom: '1px solid #1e293b' }}>
+                      <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{c.fecha}</td>
+                      <td style={{ padding: '12px 16px', color: '#38bdf8', fontWeight: '500' }}>{c.concesionario}</td>
+                      <td style={{ padding: '12px 16px', fontWeight: 'bold', color: '#fff' }}>{c.cliente}</td>
+                      <td style={{ padding: '12px 16px' }}>{c.numeroCliente}</td>
+                      <td style={{ padding: '12px 16px', color: '#10b981' }}>${c.inicial.toFixed(2)}</td>
+                      <td style={{ padding: '12px 16px', color: '#f59e0b' }}>${c.canonSemanal.toFixed(2)}</td>
+                      <td style={{ padding: '12px 16px' }}>{c.moto}</td>
+                      <td style={{ padding: '12px 16px', color: '#fb923c', fontFamily: 'monospace' }}>{c.certificado}</td>
+                      <td style={{ padding: '12px 16px', color: '#f43f5e', fontWeight: '600' }}>${c.pagoConcesionario.toFixed(2)}</td>
+                      <td style={{ padding: '12px 16px', color: '#10b981', fontWeight: 'bold' }}>${c.comisionVendedor.toFixed(2)}</td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800">
-                    {contratosFiltrados.map((c) => (
-                      <tr key={c.id} className="hover:bg-slate-800/40 transition">
-                        <td className="p-3 whitespace-nowrap">{c.fecha}</td>
-                        <td className="p-3 font-medium text-indigo-300">{c.concesionario}</td>
-                        <td className="p-3 font-bold text-white">{c.cliente}</td>
-                        <td className="p-3 whitespace-nowrap">{c.numeroCliente}</td>
-                        <td className="p-3 text-emerald-400">${c.inicial.toFixed(2)}</td>
-                        <td className="p-3 text-amber-300">${c.canonSemanal.toFixed(2)}</td>
-                        <td className="p-3">{c.moto}</td>
-                        <td className="p-3 font-mono text-orange-300">{c.certificado}</td>
-                        <td className="p-3 text-rose-300 font-semibold">${c.pagoConcesionario.toFixed(2)}</td>
-                        <td className="p-3 text-emerald-400 font-bold">${c.comisionVendedor.toFixed(2)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Cuadro Lateral de Concesionarios y Comisiones */}
-            <div className="xl:col-span-1 bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-lg flex flex-col justify-between">
-              <div>
-                <h3 className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-3 border-b border-slate-800 pb-2">
-                  📊 Resumen de Sedes
-                </h3>
-                <div className="space-y-2.5">
-                  {resumenSedes.map((item, idx) => (
-                    <div key={idx} className="bg-slate-950 p-2.5 rounded-lg border border-slate-800/60 text-xs">
-                      <p className="font-bold text-slate-200 truncate">{item.sede}</p>
-                      <div className="flex justify-between items-center mt-1.5">
-                        <span className="text-slate-400">Pago Corte:</span>
-                        <span className="text-rose-400 font-semibold">${item.pagoCorte.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between items-center mt-0.5">
-                        <span className="text-slate-400">Comisión (1%):</span>
-                        <span className="text-emerald-400 font-bold">${item.comision.toFixed(2)}</span>
-                      </div>
-                    </div>
                   ))}
-                </div>
-              </div>
-
-              <div className="mt-4 pt-3 border-t border-slate-800 text-center">
-                <span className="text-[11px] text-slate-500">Ruedda System 💚</span>
-              </div>
+                </tbody>
+              </table>
             </div>
-
           </div>
 
         </div>
-      </main>
+      </div>
     </div>
   );
 }
