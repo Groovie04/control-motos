@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react';
 
 export default function RueddaControlArrendamiento() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  const [activeTab, setActiveTab] = useState<'ventas' | 'pagos' | 'metricas' | 'semanal'>('ventas');
+  const [activeTab, setActiveTab] = useState<'ventas' | 'pagos' | 'metricas' | 'semanal' | 'tabulador'>('ventas');
   const [menuRetraido, setMenuRetraido] = useState<boolean>(false);
   const [showModal, setShowModal] = useState<boolean>(false);
 
@@ -57,6 +57,9 @@ export default function RueddaControlArrendamiento() {
   const [nuevaMarcaInput, setNuevaMarcaInput] = useState('');
   const [modoNuevaMoto, setModoNuevaMoto] = useState(false);
   const [nuevaMotoInput, setNuevaMotoInput] = useState('');
+
+  // Estados para el Tabulador Interactivo Ruedda*
+  const [tabuladorPrecioContado, setTabuladorPrecioContado] = useState<number>(1240);
 
   const obtenerFechaInput = () => {
     const d = new Date();
@@ -240,6 +243,18 @@ export default function RueddaControlArrendamiento() {
     });
   }, [flotaFiltradaSemana, sedesConfig]);
 
+  // Cálculos dinámicos del Tabulador Ruedda*
+  const tabuladorCalculado = useMemo(() => {
+    const precio = Math.max(0, tabuladorPrecioContado);
+    const inicial = precio * 0.275;
+    const totalSistema = precio * (1 + 0.914096774);
+    const canonSemanal = (totalSistema - inicial) / 24;
+    return {
+      inicial: Math.round(inicial * 100) / 100,
+      canonSemanal: Math.round(canonSemanal * 100) / 100
+    };
+  }, [tabuladorPrecioContado]);
+
   const totalCostoConcesionario = flotaFiltradaSemana.reduce((acc, curr) => acc + (Number(curr.costoConcesionario) || 0), 0);
   const totalPagoConcesionario = flotaFiltradaSemana.reduce((acc, curr) => acc + (Number(curr.pagoConcesionario) || 0), 0);
   const totalProyeccionInteres = flotaFiltradaSemana.reduce((acc, curr) => acc + (Number(curr.proyeccionInteres) || 0), 0);
@@ -287,6 +302,9 @@ export default function RueddaControlArrendamiento() {
           <button onClick={() => setActiveTab('semanal')} style={{ textAlign: menuRetraido ? 'center' : 'left', background: activeTab === 'semanal' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: menuRetraido ? 'center' : 'flex-start', gap: '10px', fontSize: '13px' }}>
             <span>📅</span> {!menuRetraido && 'Reporte Semanal'}
           </button>
+          <button onClick={() => setActiveTab('tabulador')} style={{ textAlign: menuRetraido ? 'center' : 'left', background: activeTab === 'tabulador' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: menuRetraido ? 'center' : 'flex-start', gap: '10px', fontSize: '13px' }}>
+            <span>🧮</span> {!menuRetraido && 'Tabulador Ruedda*'}
+          </button>
         </div>
 
         <div style={{ marginTop: 'auto', paddingTop: '20px', borderTop: '1px solid #334155' }}>
@@ -306,34 +324,39 @@ export default function RueddaControlArrendamiento() {
             {activeTab === 'pagos' && 'Reporte de Pago y Liquidación por Sedes'}
             {activeTab === 'metricas' && 'Métricas de Venta y Distribución Ruedda'}
             {activeTab === 'semanal' && 'Reporte Semanal de Cánones y Cobranza'}
+            {activeTab === 'tabulador' && 'Tabulador Interactivo — Inicial y Cánones Semanales'}
           </h1>
 
-          <button onClick={() => setShowModal(true)} style={{ background: '#D96B27', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
-            ➕ Registrar Nueva Venta 🏍️💨
-          </button>
+          {activeTab !== 'tabulador' && (
+            <button onClick={() => setShowModal(true)} style={{ background: '#D96B27', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
+              ➕ Registrar Nueva Venta 🏍️💨
+            </button>
+          )}
         </div>
 
-        {/* SEGUNDA LÍNEA: SELECTOR DE SEMANA DE CORTE */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '25px', borderBottom: `2px solid ${isDark ? '#333' : '#e2e8f0'}`, paddingBottom: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: cardBg, padding: '4px 10px', borderRadius: '6px', border: `1px solid ${borderColor}` }}>
-            <select 
-              value={semanaSeleccionadaId} 
-              onChange={(e) => setSemanaSeleccionadaId(Number(e.target.value))} 
-              style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
-              {semanasCortas.map((s) => (
-                <option key={s.id} value={s.id}>
-                  Semana de corte: {s.id} ({s.fechaRango})
-                </option>
-              ))}
-            </select>
-            <button 
-              onClick={agregarNuevaSemana}
-              title="Crear nueva semana de corte"
-              style={{ background: '#D96B27', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}>
-              + Nueva semana
-            </button>
+        {/* SEGUNDA LÍNEA: SELECTOR DE SEMANA DE CORTE (Solo si aplica) */}
+        {activeTab !== 'tabulador' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '25px', borderBottom: `2px solid ${isDark ? '#333' : '#e2e8f0'}`, paddingBottom: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: cardBg, padding: '4px 10px', borderRadius: '6px', border: `1px solid ${borderColor}` }}>
+              <select 
+                value={semanaSeleccionadaId} 
+                onChange={(e) => setSemanaSeleccionadaId(Number(e.target.value))} 
+                style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
+                {semanasCortas.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    Semana de corte: {s.id} ({s.fechaRango})
+                  </option>
+                ))}
+              </select>
+              <button 
+                onClick={agregarNuevaSemana}
+                title="Crear nueva semana de corte"
+                style={{ background: '#D96B27', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}>
+                + Nueva semana
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* MODAL NUEVA VENTA */}
         {showModal && (
@@ -625,6 +648,79 @@ export default function RueddaControlArrendamiento() {
                 💡 Proyección de Interés Acumulada en esta semana: <strong style={{ color: '#38bdf8' }}>${totalProyeccionInteres.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong> 🏍️💨
               </p>
             </div>
+          </div>
+        )}
+
+        {/* 5. VENTANA: TABULADOR RUEDDA* */}
+        {activeTab === 'tabulador' && (
+          <div style={{ maxWidth: '900px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            
+            {/* Selector rápido de precios frecuentes */}
+            <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '16px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+              <div>
+                <h4 style={{ margin: 0, fontSize: '14px', color: '#D96B27' }}>Precios Frecuentes de Contado</h4>
+                <p style={{ margin: '2px 0 0 0', fontSize: '11px', opacity: 0.7 }}>Selecciona un monto rápido o escribe el valor deseado</p>
+              </div>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                {[1000, 1240, 1500, 2000, 2500].map((val) => (
+                  <button 
+                    key={val} 
+                    onClick={() => setTabuladorPrecioContado(val)}
+                    style={{ background: tabuladorPrecioContado === val ? '#D96B27' : inputBg, color: tabuladorPrecioContado === val ? '#fff' : textMain, border: `1px solid ${borderColor}`, padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
+                    ${val} {val === 1240 ? '★' : ''}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+              {/* Panel Izquierdo: Input */}
+              <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <h3 style={{ margin: '0 0 16px 0', fontSize: '15px', color: '#D96B27' }}>Valor del Vehículo</h3>
+                  <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', opacity: 0.8, fontWeight: 'bold' }}>Precio Contado ($)</label>
+                  <input 
+                    type="number" 
+                    value={tabuladorPrecioContado} 
+                    onChange={(e) => setTabuladorPrecioContado(parseFloat(e.target.value) || 0)} 
+                    style={{ width: '100%', background: inputBg, color: inputText, border: '2px solid #D96B27', padding: '12px', borderRadius: '6px', fontSize: '20px', fontWeight: '900' }} 
+                  />
+                  <input 
+                    type="range" 
+                    min="300" 
+                    max="5000" 
+                    step="10" 
+                    value={tabuladorPrecioContado} 
+                    onChange={(e) => setTabuladorPrecioContado(parseFloat(e.target.value) || 0)}
+                    style={{ width: '100%', marginTop: '16px', accentColor: '#D96B27', cursor: 'pointer' }} 
+                  />
+                </div>
+                <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: `1px solid ${borderColor}`, fontSize: '12px', opacity: 0.8 }}>
+                  <p style={{ margin: '0 0 4px 0' }}>• Porcentaje Inicial: <strong>27.5%</strong></p>
+                  <p style={{ margin: 0 }}>• Plazo de Financiamiento: <strong>24 Semanas</strong></p>
+                </div>
+              </div>
+
+              {/* Panel Derecho: Resultados */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <div style={{ background: isDark ? '#162235' : '#e0f2fe', border: '2px solid #38bdf8', borderRadius: '8px', padding: '20px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: '#38bdf8' }}>Inicial Requerida</span>
+                  <h2 style={{ fontSize: '32px', fontWeight: '900', margin: '6px 0 0 0', color: '#38bdf8' }}>
+                    ${tabuladorCalculado.inicial.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </h2>
+                  <span style={{ fontSize: '11px', opacity: 0.7, display: 'block', marginTop: '4px' }}>Pago único de contado a la firma</span>
+                </div>
+
+                <div style={{ background: isDark ? '#231812' : '#ffedd5', border: '2px solid #D96B27', borderRadius: '8px', padding: '20px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: '#D96B27' }}>Cánon Semanal</span>
+                  <h2 style={{ fontSize: '32px', fontWeight: '900', margin: '6px 0 0 0', color: '#D96B27' }}>
+                    ${tabuladorCalculado.canonSemanal.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </h2>
+                  <span style={{ fontSize: '11px', opacity: 0.7, display: 'block', marginTop: '4px' }}>Durante 24 semanas consecutivas</span>
+                </div>
+              </div>
+            </div>
+
           </div>
         )}
 
