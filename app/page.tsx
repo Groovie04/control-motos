@@ -5,12 +5,56 @@ export default function RueddaControlArrendamiento() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [activeTab, setActiveTab] = useState<'ventas' | 'pagos' | 'metricas' | 'semanal'>('ventas');
   
-  // Estado para controlar la visibilidad del modal / cuadro de nueva venta
+  // Estado para controlar la visibilidad del modal de nueva venta
   const [showModal, setShowModal] = useState<boolean>(false);
+
+  // Listas base persistentes y ampliables dinámicamente
+  const [listaConcesionarios, setListaConcesionarios] = useState([
+    'Motores Del Este VIP C.A.',
+    'Urdaneta Motors 2025 C.A.',
+    'Turbo Motos C.A',
+    'Velocity Motos C.A.',
+    'INVERSIONES CHT30, C.A',
+    'AKOX C.A.',
+    'NECATIX C.A',
+    'SUPER MOTOS TROPICAL C.A'
+  ]);
+
+  const [listaMotos, setListaMotos] = useState([
+    'F16-EXTREME',
+    'CG-HERO',
+    'EXPRESS-150',
+    'WORKER-200'
+  ]);
+
+  const [listaPlanes] = useState([
+    '6 Meses - Semanal',
+    '3 Meses - Semanal',
+    '1 Año - Semanal',
+    'Contado'
+  ]);
+
+  const [listaDias] = useState([
+    'Lunes',
+    'Martes',
+    'Miércoles',
+    'Jueves',
+    'Viernes',
+    'Sábado'
+  ]);
+
+  // Fecha actual formateada (DD/MM/YYYY) para sugerencia inicial automática
+  const obtenerFechaActual = () => {
+    const d = new Date();
+    const dia = String(d.getDate()).padStart(2, '0');
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const anio = d.getFullYear();
+    return `${dia}/${mes}/${anio}`;
+  };
 
   // Estado del formulario de nueva venta
   const [nuevaVenta, setNuevaVenta] = useState({
-    fecha: '',
+    fecha: obtenerFechaActual(),
     concesionario: 'Motores Del Este VIP C.A.',
     plan: '6 Meses - Semanal',
     cliente: '',
@@ -28,12 +72,9 @@ export default function RueddaControlArrendamiento() {
   const [flota, setFlota] = useState([
     { fecha: '10/08/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Alberto Rafael Salas Martinez', telefono: '584167171297', cuota: 'Lunes', canon: 109.27, inicial: 440.00, marca: 'Escuda', moto: 'F16-EXTREME', fechaCorte: '13/08/2026', imei: '863874086467440', certificado: 'AA-1278490', costoConcesionario: 1600.00, pagoConcesionario: 1160.00 },
     { fecha: '11/08/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Freddy David Perez Peña', telefono: '584126034365', cuota: 'Martes', canon: 68.98, inicial: 277.75, marca: 'Escuda', moto: 'CG-HERO', fechaCorte: '', imei: '863874086280066', certificado: 'AA-1329061', costoConcesionario: 1010.00, pagoConcesionario: 732.25 },
-    { fecha: '11/08/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Jesus German Barrios Yecerra', telefono: '584241323953', cuota: 'Martes', canon: 67.61, inicial: 272.25, marca: 'Escuda', moto: 'CG-HERO', fechaCorte: '', imei: '863874086325747', certificado: 'AA-1329049', costoConcesionario: 990.00, pagoConcesionario: 717.75 },
-    { fecha: '11/08/2026', concesionario: 'INVERSIONES CHT30, C.A', plan: '6 Meses - Semanal', cliente: 'Marcos Sleyder Bozo Perez', telefono: '584243571388', cuota: 'Viernes', canon: 125.66, inicial: 506.00, marca: 'Escuda', moto: 'F16-EXTREME', fechaCorte: '', imei: '863874086467614', certificado: 'AA-1329414', costoConcesionario: 1840.00, pagoConcesionario: 1334.00 },
-    { fecha: '12/08/2026', concesionario: 'NECATIX C.A', plan: '6 Meses - Semanal', cliente: 'Carlos Eduardo Gomez', telefono: '584129876543', cuota: 'Jueves', canon: 95.00, inicial: 380.00, marca: 'Escuda', moto: 'F16-EXTREME', fechaCorte: '', imei: '863874086499111', certificado: 'AA-1329500', costoConcesionario: 1400.00, pagoConcesionario: 1000.00 }
+    { fecha: '11/08/2026', concesionario: 'INVERSIONES CHT30, C.A', plan: '6 Meses - Semanal', cliente: 'Marcos Sleyder Bozo Perez', telefono: '584243571388', cuota: 'Viernes', canon: 125.66, inicial: 506.00, marca: 'Escuda', moto: 'F16-EXTREME', fechaCorte: '', imei: '863874086467614', certificado: 'AA-1329414', costoConcesionario: 1840.00, pagoConcesionario: 1334.00 }
   ]);
 
-  // Configuración base de Sedes / Concesionarios
   const [sedesConfig, setSedesConfig] = useState([
     { sede: 'Motores Del Este VIP C.A.', pen: 0.00 },
     { sede: 'Urdaneta Motors 2025 C.A.', pen: 0.00 },
@@ -44,6 +85,19 @@ export default function RueddaControlArrendamiento() {
     { sede: 'NECATIX C.A', pen: 0.00 },
     { sede: 'SUPER MOTOS TROPICAL C.A', pen: 0.00 }
   ]);
+
+  // Actualización automática de Pago Concesionario al cambiar Costo o Inicial
+  const handleCostoOInicialChange = (campo: 'costoConcesionario' | 'inicial', valor: number) => {
+    const costo = campo === 'costoConcesionario' ? valor : nuevaVenta.costoConcesionario;
+    const inicial = campo === 'inicial' ? valor : nuevaVenta.inicial;
+    const pagoAuto = Math.max(0, costo - inicial);
+
+    setNuevaVenta({
+      ...nuevaVenta,
+      [campo]: valor,
+      pagoConcesionario: pagoAuto
+    });
+  };
 
   const handleFlotaChange = (index: number, field: string, value: any) => {
     const nuevaFlota = [...flota];
@@ -57,16 +111,26 @@ export default function RueddaControlArrendamiento() {
     setSedesConfig(nuevas);
   };
 
-  // Manejador para registrar la nueva venta desde el cuadro
+  // Registrar nueva venta desde el modal y guardar nuevos ítems en listas si aplican
   const handleAgregarVentaSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!nuevaVenta.cliente || !nuevaVenta.imei) {
-      alert('Por favor ingresa al menos el Nombre del Cliente y el IMEI GPS.');
+      alert('Por favor completa al menos el Nombre del Cliente y el IMEI GPS.');
       return;
     }
 
+    // Agregar concesionario a la lista desplegable si es nuevo
+    if (!listaConcesionarios.includes(nuevaVenta.concesionario)) {
+      setListaConcesionarios([...listaConcesionarios, nuevaVenta.concesionario]);
+    }
+
+    // Agregar modelo de moto a la lista si es nuevo
+    if (!listaMotos.includes(nuevaVenta.moto)) {
+      setListaMotos([...listaMotos, nuevaVenta.moto]);
+    }
+
     const itemAAgregar = {
-      fecha: nuevaVenta.fecha || new Date().toLocaleDateString(),
+      fecha: nuevaVenta.fecha || obtenerFechaActual(),
       concesionario: nuevaVenta.concesionario,
       plan: nuevaVenta.plan,
       cliente: nuevaVenta.cliente,
@@ -83,29 +147,25 @@ export default function RueddaControlArrendamiento() {
       pagoConcesionario: Number(nuevaVenta.pagoConcesionario) || 0
     };
 
-    // Asegurarse de que si la sede no está en sedesConfig, aparezca o se acumule
     setFlota([itemAAgregar, ...flota]);
     setShowModal(false);
-    // Limpiar formulario o resetear valores básicos
     setNuevaVenta({
-      fecha: '',
-      concesionario: 'Motores Del Este VIP C.A.',
-      plan: '6 Meses - Semanal',
+      fecha: obtenerFechaActual(),
+      concesionario: listaConcesionarios[0],
+      plan: listaPlanes[0],
       cliente: '',
       telefono: '',
-      cuota: 'Lunes',
+      cuota: listaDias[0],
       canon: 0,
       inicial: 0,
-      moto: 'F16-EXTREME',
+      moto: listaMotos[0],
       imei: '',
       costoConcesionario: 0,
       pagoConcesionario: 0
     });
   };
 
-  // Interconexión y cálculo automático por Sede
   const sedesCalculadas = useMemo(() => {
-    // Extraer todas las sedes únicas (incluyendo las añadidas dinámicamente)
     const sedesUnicas = Array.from(new Set([...sedesConfig.map(s => s.sede), ...flota.map(f => f.concesionario)]));
 
     return sedesUnicas.map((sedeNombre) => {
@@ -126,14 +186,12 @@ export default function RueddaControlArrendamiento() {
     });
   }, [flota, sedesConfig]);
 
-  // Totales Generales interconectados
   const totalCostoConcesionario = flota.reduce((acc, curr) => acc + (Number(curr.costoConcesionario) || 0), 0);
   const totalPagoConcesionario = flota.reduce((acc, curr) => acc + (Number(curr.pagoConcesionario) || 0), 0);
   const totalPagoCorte = sedesCalculadas.reduce((acc, curr) => acc + curr.pagoCorte, 0);
   const totalComisionSedes = sedesCalculadas.reduce((acc, curr) => acc + curr.comision, 0);
   const totalPenSedes = sedesCalculadas.reduce((acc, curr) => acc + curr.pen, 0);
 
-  // Estilos visuales
   const isDark = theme === 'dark';
   const bgMain = isDark ? '#121212' : '#f8fafc';
   const textMain = isDark ? '#f3f4f6' : '#1e293b';
@@ -194,63 +252,127 @@ export default function RueddaControlArrendamiento() {
           </button>
         </div>
 
-        {/* MODAL / CUADRO PARA REGISTRAR NUEVA VENTA */}
+        {/* MODAL / CUADRO MEJORADO CON DESPLEGABLES Y CÁLCULO AUTOMÁTICO */}
         {showModal && (
           <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-            <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '10px', padding: '25px', width: '600px', maxWidth: '90%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
+            <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '10px', padding: '25px', width: '620px', maxWidth: '90%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', borderBottom: `1px solid ${borderColor}`, paddingBottom: '10px' }}>
-                <h3 style={{ margin: 0, color: '#D96B27', fontSize: '17px' }}>Registrar Nueva Venta de Flota</h3>
+                <h3 style={{ margin: 0, color: '#D96B27', fontSize: '17px' }}>Registrar Nueva Venta de Flota 💚</h3>
                 <button onClick={() => setShowModal(false)} style={{ background: 'transparent', border: 'none', color: textMain, fontSize: '18px', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
               </div>
 
               <form onSubmit={handleAgregarVentaSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
+                
+                {/* FECHA (Automática editable) */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Fecha</label>
-                  <input type="text" placeholder="Ej: 15/08/2026" value={nuevaVenta.fecha} onChange={e => setNuevaVenta({...nuevaVenta, fecha: e.target.value})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                  <input 
+                    type="text" 
+                    value={nuevaVenta.fecha} 
+                    onChange={e => setNuevaVenta({...nuevaVenta, fecha: e.target.value})} 
+                    style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} 
+                    required 
+                  />
                 </div>
+
+                {/* CONCESIONARIO (Desplegable con opción de escribir nuevo) */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Concesionario</label>
-                  <input type="text" placeholder="Ej: Motores Del Este VIP C.A." value={nuevaVenta.concesionario} onChange={e => setNuevaVenta({...nuevaVenta, concesionario: e.target.value})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} required />
+                  <select 
+                    value={nuevaVenta.concesionario} 
+                    onChange={e => setNuevaVenta({...nuevaVenta, concesionario: e.target.value})} 
+                    style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }}>
+                    {listaConcesionarios.map((c, i) => (
+                      <option key={i} value={c}>{c}</option>
+                    ))}
+                  </select>
                 </div>
+
+                {/* PLAN (Desplegable) */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Plan</label>
-                  <input type="text" placeholder="Ej: 6 Meses - Semanal" value={nuevaVenta.plan} onChange={e => setNuevaVenta({...nuevaVenta, plan: e.target.value})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                  <select 
+                    value={nuevaVenta.plan} 
+                    onChange={e => setNuevaVenta({...nuevaVenta, plan: e.target.value})} 
+                    style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }}>
+                    {listaPlanes.map((p, i) => (
+                      <option key={i} value={p}>{p}</option>
+                    ))}
+                  </select>
                 </div>
+
+                {/* NOMBRE CLIENTE */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Nombre del Cliente</label>
                   <input type="text" placeholder="Nombre completo" value={nuevaVenta.cliente} onChange={e => setNuevaVenta({...nuevaVenta, cliente: e.target.value})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} required />
                 </div>
+
+                {/* NRO CLIENTE */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Nro. Cliente (Teléfono)</label>
                   <input type="text" placeholder="Ej: 584126000000" value={nuevaVenta.telefono} onChange={e => setNuevaVenta({...nuevaVenta, telefono: e.target.value})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
                 </div>
+
+                {/* DÍA DE CUOTA (Desplegable) */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Día de Cuota</label>
-                  <input type="text" placeholder="Ej: Lunes" value={nuevaVenta.cuota} onChange={e => setNuevaVenta({...nuevaVenta, cuota: e.target.value})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                  <select 
+                    value={nuevaVenta.cuota} 
+                    onChange={e => setNuevaVenta({...nuevaVenta, cuota: e.target.value})} 
+                    style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }}>
+                    {listaDias.map((d, i) => (
+                      <option key={i} value={d}>{d}</option>
+                    ))}
+                  </select>
                 </div>
+
+                {/* CANON SEMANAL */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Canon Semanal ($)</label>
-                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.canon || ''} onChange={e => setNuevaVenta({...nuevaVenta, canon: parseFloat(e.target.value)})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.canon || ''} onChange={e => setNuevaVenta({...nuevaVenta, canon: parseFloat(e.target.value) || 0})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
                 </div>
+
+                {/* INICIAL (Afecta cálculo automático) */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Inicial ($)</label>
-                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.inicial || ''} onChange={e => setNuevaVenta({...nuevaVenta, inicial: parseFloat(e.target.value)})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.inicial || ''} onChange={e => handleCostoOInicialChange('inicial', parseFloat(e.target.value) || 0)} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
                 </div>
+
+                {/* MODELO DE MOTO (Desplegable) */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Modelo de Moto</label>
-                  <input type="text" placeholder="Ej: CG-HERO o F16-EXTREME" value={nuevaVenta.moto} onChange={e => setNuevaVenta({...nuevaVenta, moto: e.target.value})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                  <select 
+                    value={nuevaVenta.moto} 
+                    onChange={e => setNuevaVenta({...nuevaVenta, moto: e.target.value})} 
+                    style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }}>
+                    {listaMotos.map((m, i) => (
+                      <option key={i} value={m}>{m}</option>
+                    ))}
+                  </select>
                 </div>
+
+                {/* IMEI GPS */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>IMEI GPS</label>
                   <input type="text" placeholder="Número de IMEI" value={nuevaVenta.imei} onChange={e => setNuevaVenta({...nuevaVenta, imei: e.target.value})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} required />
                 </div>
+
+                {/* COSTO CONCESIONARIO (Afecta cálculo automático) */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Costo Concesionario ($)</label>
-                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.costoConcesionario || ''} onChange={e => setNuevaVenta({...nuevaVenta, costoConcesionario: parseFloat(e.target.value)})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.costoConcesionario || ''} onChange={e => handleCostoOInicialChange('costoConcesionario', parseFloat(e.target.value) || 0)} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
                 </div>
+
+                {/* PAGO CONCESIONARIO (Restado automáticamente: Costo - Inicial) */}
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Pago Concesionario ($)</label>
-                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.pagoConcesionario || ''} onChange={e => setNuevaVenta({...nuevaVenta, pagoConcesionario: parseFloat(e.target.value)})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8, color: '#10b981', fontWeight: 'bold' }}>Pago Concesionario ($ automático)</label>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    value={nuevaVenta.pagoConcesionario || 0} 
+                    readOnly
+                    style={{ width: '100%', background: isDark ? '#11221c' : '#d1fae5', color: '#10b981', border: `1px solid #10b981`, padding: '8px', borderRadius: '4px', fontWeight: 'bold' }} 
+                  />
                 </div>
 
                 <div style={{ gridColumn: 'span 2', display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '15px' }}>
@@ -258,7 +380,7 @@ export default function RueddaControlArrendamiento() {
                     Cancelar
                   </button>
                   <button type="submit" style={{ background: '#10b981', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
-                    Guardar e Integrar Venta
+                    Guardar e Integrar Venta 🚗💨
                   </button>
                 </div>
               </form>
