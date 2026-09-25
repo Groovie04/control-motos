@@ -49,7 +49,6 @@ export default function RueddaControlArrendamiento() {
     'Domingo'
   ]);
 
-  // Estados temporales para cuando el usuario selecciona "+ Agregar nuevo..."
   const [modoNuevoConcesionario, setModoNuevoConcesionario] = useState(false);
   const [nuevoConcesionarioInput, setNuevoConcesionarioInput] = useState('');
 
@@ -62,7 +61,6 @@ export default function RueddaControlArrendamiento() {
   const [modoNuevaMoto, setModoNuevaMoto] = useState(false);
   const [nuevaMotoInput, setNuevaMotoInput] = useState('');
 
-  // Obtener fecha actual en formato YYYY-MM-DD
   const obtenerFechaInput = () => {
     const d = new Date();
     const anio = d.getFullYear();
@@ -71,7 +69,6 @@ export default function RueddaControlArrendamiento() {
     return `${anio}-${mes}-${dia}`;
   };
 
-  // Obtener el día de la semana en español a partir de una fecha YYYY-MM-DD
   const obtenerDiaSemanaEsp = (fechaIso: string) => {
     if (!fechaIso) return 'Lunes';
     const partes = fechaIso.split('-');
@@ -83,7 +80,6 @@ export default function RueddaControlArrendamiento() {
     return 'Lunes';
   };
 
-  // Convertir formato YYYY-MM-DD a DD/MM/YYYY para mostrar en tablas
   const formatearFechaDisplay = (fechaIso: string) => {
     if (!fechaIso) return '';
     const partes = fechaIso.split('-');
@@ -128,24 +124,23 @@ export default function RueddaControlArrendamiento() {
     { sede: 'SUPER MOTOS TROPICAL C.A', pen: 0.00 }
   ]);
 
-  // Recálculo automático financiero (Inicial = 27.5% de Costo Concesionario)
   const actualizarCalculosFinancieros = (datosParciales: any) => {
     let costo = Number(datosParciales.costoConcesionario ?? nuevaVenta.costoConcesionario) || 0;
     
-    // Si se modifica la fecha, actualizamos automáticamente el día de cuota según el calendario
     let cuotaActual = datosParciales.cuota ?? nuevaVenta.cuota;
     if (datosParciales.fecha) {
       cuotaActual = obtenerDiaSemanaEsp(datosParciales.fecha);
     }
 
-    // Inicial = 27.5% del Costo Concesionario
     const inicial = costo * 0.275;
-    
-    // Pago Concesionario = Costo Concesionario - Inicial
     const pagoConcesionario = Math.max(0, costo - inicial);
+    
+    // Canon Semanal según fórmula solicitada: ((Costo concesionario * (1 + 0.914096774)) - Inicial) / 24
+    const canon = costo > 0 ? ((costo * (1 + 0.914096774)) - inicial) / 24 : 0;
 
-    // Proyección de Interés = Costo Concesionario * 91.41% + Costo Concesionario - Inicial - Pago Concesionario
-    const proyeccionInteres = (costo * 0.9141) + costo - inicial - pagoConcesionario;
+    // Proyección de Interés redondeada estrictamente a 2 decimales
+    const proyeccionBruta = (costo * 0.9141) + costo - inicial - pagoConcesionario;
+    const proyeccionInteres = Math.round(proyeccionBruta * 100) / 100;
 
     setNuevaVenta({
       ...nuevaVenta,
@@ -153,6 +148,7 @@ export default function RueddaControlArrendamiento() {
       cuota: cuotaActual,
       inicial,
       pagoConcesionario,
+      canon,
       proyeccionInteres
     });
   };
@@ -176,7 +172,6 @@ export default function RueddaControlArrendamiento() {
       return;
     }
 
-    // Registrar nuevos elementos si fueron creados al vuelo
     let concesionarioFinal = nuevaVenta.concesionario;
     if (modoNuevoConcesionario && nuevoConcesionarioInput.trim()) {
       concesionarioFinal = nuevoConcesionarioInput.trim();
@@ -343,7 +338,7 @@ export default function RueddaControlArrendamiento() {
           </button>
         </div>
 
-        {/* MODAL CON NUEVO ORDEN, CÁLCULO DE INICIAL 27.5%, Y OPCIONES DE CREAR NUEVOS */}
+        {/* MODAL */}
         {showModal && (
           <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
             <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '10px', padding: '25px', width: '680px', maxWidth: '92%', maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
@@ -354,7 +349,7 @@ export default function RueddaControlArrendamiento() {
 
               <form onSubmit={handleAgregarVentaSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
                 
-                {/* 1. FECHA (Calendario desplegable automático) */}
+                {/* 1. FECHA */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Fecha (Calendario)</label>
                   <input 
@@ -366,7 +361,7 @@ export default function RueddaControlArrendamiento() {
                   />
                 </div>
 
-                {/* 2. CONCESIONARIO (Con opción de agregar nuevo) */}
+                {/* 2. CONCESIONARIO */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Concesionario</label>
                   {!modoNuevoConcesionario ? (
@@ -400,7 +395,7 @@ export default function RueddaControlArrendamiento() {
                   )}
                 </div>
 
-                {/* 3. PLAN (Con opción de agregar nuevo) */}
+                {/* 3. PLAN */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Plan</label>
                   {!modoNuevoPlan ? (
@@ -446,9 +441,9 @@ export default function RueddaControlArrendamiento() {
                   <input type="text" placeholder="Ej: 584126000000" value={nuevaVenta.telefono} onChange={e => actualizarCalculosFinancieros({ telefono: e.target.value })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
                 </div>
 
-                {/* 6. DÍA DE CUOTA (Sincronizado automáticamente con la fecha de venta) */}
+                {/* 6. DÍA DE CUOTA */}
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Día de cuota (Fijo por Fecha)</label>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Día de cuota</label>
                   <select 
                     value={nuevaVenta.cuota} 
                     onChange={e => actualizarCalculosFinancieros({ cuota: e.target.value })} 
@@ -459,7 +454,7 @@ export default function RueddaControlArrendamiento() {
                   </select>
                 </div>
 
-                {/* 7. COSTO CONCESIONARIO (Movido aquí y calcula automáticamente Inicial) */}
+                {/* 7. COSTO CONCESIONARIO */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Costo concesionario ($)</label>
                   <input 
@@ -472,9 +467,9 @@ export default function RueddaControlArrendamiento() {
                   />
                 </div>
 
-                {/* 8. INICIAL ($ Automático: 27.5% de Costo Concesionario) */}
+                {/* 8. INICIAL ($) */}
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8, color: '#38bdf8', fontWeight: 'bold' }}>Inicial ($ automático: 27.5%)</label>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8, color: '#38bdf8', fontWeight: 'bold' }}>Inicial ($)</label>
                   <input 
                     type="number" 
                     step="0.01" 
@@ -484,13 +479,19 @@ export default function RueddaControlArrendamiento() {
                   />
                 </div>
 
-                {/* 9. CANON SEMANAL */}
+                {/* 9. CANON SEMANAL ($) */}
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Canon semanal ($)</label>
-                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.canon || ''} onChange={e => actualizarCalculosFinancieros({ canon: parseFloat(e.target.value) || 0 })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8, color: '#38bdf8', fontWeight: 'bold' }}>Canon semanal ($)</label>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    value={nuevaVenta.canon || 0} 
+                    onChange={e => actualizarCalculosFinancieros({ canon: parseFloat(e.target.value) || 0 })} 
+                    style={{ width: '100%', background: isDark ? '#162235' : '#e0f2fe', color: '#38bdf8', border: `1px solid #38bdf8`, padding: '8px', borderRadius: '4px', fontWeight: 'bold' }} 
+                  />
                 </div>
 
-                {/* 10. MARCA (Con opción de agregar nueva) */}
+                {/* 10. MARCA */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Marca</label>
                   {!modoNuevaMarca ? (
@@ -524,7 +525,7 @@ export default function RueddaControlArrendamiento() {
                   )}
                 </div>
 
-                {/* 11. MOTO (Con opción de agregar nueva) */}
+                {/* 11. MOTO */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Moto</label>
                   {!modoNuevaMoto ? (
@@ -567,12 +568,12 @@ export default function RueddaControlArrendamiento() {
                 {/* 13. N° DE CERTIFICADO */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>N° de certificado</label>
-                  <input type="text" placeholder="Ej: AA-1278490 (Auto si se deja vacío)" value={nuevaVenta.certificado} onChange={e => actualizarCalculosFinancieros({ certificado: e.target.value })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                  <input type="text" placeholder="Ej: AA-1278490" value={nuevaVenta.certificado} onChange={e => actualizarCalculosFinancieros({ certificado: e.target.value })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
                 </div>
 
-                {/* 14. PAGO A CONCESIONARIO (Automático: Costo - Inicial) */}
+                {/* 14. PAGO A CONCESIONARIO */}
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8, color: '#10b981', fontWeight: 'bold' }}>Pago a concesionario ($ automático)</label>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8, color: '#10b981', fontWeight: 'bold' }}>Pago a concesionario ($)</label>
                   <input 
                     type="number" 
                     step="0.01" 
@@ -584,7 +585,7 @@ export default function RueddaControlArrendamiento() {
 
                 {/* 15. PROYECCIÓN DEL INTERÉS */}
                 <div style={{ gridColumn: 'span 2' }}>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8, color: '#38bdf8', fontWeight: 'bold' }}>Proyección del interés ($ automático: Costo*91.41% + Costo - Inicial - Pago Concesionario)</label>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8, color: '#38bdf8', fontWeight: 'bold' }}>Proyección del interés ($)</label>
                   <input 
                     type="number" 
                     step="0.01" 
