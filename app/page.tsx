@@ -7,19 +7,31 @@ export default function RueddaControlArrendamiento() {
   const [menuRetraido, setMenuRetraido] = useState<boolean>(false);
   const [showModal, setShowModal] = useState<boolean>(false);
 
-  // Filtro de semanas de corte
-  const [semanaSeleccionada, setSemanaSeleccionada] = useState<string>('10/08/2026 - 13/08/2026');
+  // Control Dinámico de Semanas de Corte
+  const [semanasCortas, setSemanasCortas] = useState([
+    { id: 1, label: 'Semana de corte: 1', fechaRango: '10/08/2026 - 13/08/2026' },
+    { id: 2, label: 'Semana de corte: 2', fechaRango: '14/08/2026 - 20/08/2026' },
+    { id: 3, label: 'Semana de corte: 3', fechaRango: '21/08/2026 - 27/08/2026' },
+    { id: 4, label: 'Semana de corte: 4', fechaRango: '28/08/2026 - 03/09/2026' },
+    { id: 5, label: 'Semana de corte: 5', fechaRango: '04/09/2026 - 10/09/2026' },
+    { id: 6, label: 'Semana de corte: 6', fechaRango: '11/09/2026 - 17/09/2026' },
+    { id: 7, label: 'Semana de corte: 7', fechaRango: '18/09/2026 - 24/09/2026 (Corte de Ayer)' },
+    { id: 8, label: 'Semana de corte: 8', fechaRango: '25/09/2026 - 01/10/2026 (Próximo Pago Jueves)' }
+  ]);
 
-  const cortesSemanales = [
-    '10/08/2026 - 13/08/2026',
-    '14/08/2026 - 20/08/2026',
-    '21/08/2026 - 27/08/2026',
-    '28/08/2026 - 03/09/2026',
-    '04/09/2026 - 10/09/2026',
-    '11/09/2026 - 17/09/2026',
-    '18/09/2026 - 24/09/2026 (Corte de Ayer)',
-    '25/09/2026 - 01/10/2026 (Próximo Pago Jueves)'
-  ];
+  const [semanaSeleccionadaId, setSemanaSeleccionadaId] = useState<number>(1);
+  const semanaActualObj = semanasCortas.find(s => s.id === semanaSeleccionadaId) || semanasCortas[0];
+
+  const agregarNuevaSemana = () => {
+    const nuevoId = semanasCortas.length + 1;
+    const nuevaSemana = {
+      id: nuevoId,
+      label: `Semana de corte: ${nuevoId}`,
+      fechaRango: `Nueva Semana ${nuevoId} (En Curso)`
+    };
+    setSemanasCortas([...semanasCortas, nuevaSemana]);
+    setSemanaSeleccionadaId(nuevoId);
+  };
 
   const [listaConcesionarios, setListaConcesionarios] = useState([
     'Motores Del Este VIP C.A.',
@@ -93,9 +105,9 @@ export default function RueddaControlArrendamiento() {
   });
 
   const [flota, setFlota] = useState([
-    { fecha: '10/08/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Alberto Rafael Salas Martinez', telefono: '584167171297', inicial: 440.00, cuota: 'Lunes', canon: 109.27, marca: 'Escuda', moto: 'F16-EXTREME', fechaCorte: '13/08/2026', imei: '863874086467440', certificado: 'AA-1278490', costoConcesionario: 1600.00, pagoConcesionario: 1160.00, proyeccionInteres: 1462.56 },
-    { fecha: '11/08/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Freddy David Perez Peña', telefono: '584126034365', inicial: 277.75, cuota: 'Martes', canon: 68.98, marca: 'Escuda', moto: 'CG-HERO', fechaCorte: '', imei: '863874086280066', certificado: 'AA-1329061', costoConcesionario: 1010.00, pagoConcesionario: 732.25, proyeccionInteres: 923.15 },
-    { fecha: '11/08/2026', concesionario: 'INVERSIONES CHT30, C.A', plan: '6 Meses - Semanal', cliente: 'Marcos Sleyder Bozo Perez', telefono: '584243571388', inicial: 506.00, cuota: 'Viernes', canon: 125.66, marca: 'Escuda', moto: 'F16-EXTREME', fechaCorte: '', imei: '-', certificado: '-', costoConcesionario: 1840.00, pagoConcesionario: 1334.00, proyeccionInteres: 1681.94 }
+    { fecha: '10/08/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Alberto Rafael Salas Martinez', telefono: '584167171297', inicial: 440.00, cuota: 'Lunes', canon: 109.27, marca: 'Escuda', moto: 'F16-EXTREME', semanaId: 1, imei: '863874086467440', certificado: 'AA-1278490', costoConcesionario: 1600.00, pagoConcesionario: 1160.00, proyeccionInteres: 1462.56 },
+    { fecha: '11/08/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Freddy David Perez Peña', telefono: '584126034365', inicial: 277.75, cuota: 'Martes', canon: 68.98, marca: 'Escuda', moto: 'CG-HERO', semanaId: 1, imei: '863874086280066', certificado: 'AA-1329061', costoConcesionario: 1010.00, pagoConcesionario: 732.25, proyeccionInteres: 923.15 },
+    { fecha: '11/08/2026', concesionario: 'INVERSIONES CHT30, C.A', plan: '6 Meses - Semanal', cliente: 'Marcos Sleyder Bozo Perez', telefono: '584243571388', inicial: 506.00, cuota: 'Viernes', canon: 125.66, marca: 'Escuda', moto: 'F16-EXTREME', semanaId: 1, imei: '-', certificado: '-', costoConcesionario: 1840.00, pagoConcesionario: 1334.00, proyeccionInteres: 1681.94 }
   ]);
 
   const [sedesConfig, setSedesConfig] = useState([
@@ -194,7 +206,7 @@ export default function RueddaControlArrendamiento() {
       canon: Number(nuevaVenta.canon) || 0,
       marca: marcaFinal,
       moto: motoFinal,
-      fechaCorte: '',
+      semanaId: semanaSeleccionadaId,
       imei: nuevaVenta.imei.trim() ? nuevaVenta.imei.trim() : '-',
       certificado: nuevaVenta.certificado.trim() ? nuevaVenta.certificado.trim() : '-',
       costoConcesionario: Number(nuevaVenta.costoConcesionario) || 0,
@@ -210,22 +222,27 @@ export default function RueddaControlArrendamiento() {
     setModoNuevaMoto(false);
   };
 
+  // Filtrar la flota según la semana seleccionada
+  const flotaFiltradaSemana = useMemo(() => {
+    return flota.filter(item => (item.semanaId ?? 1) === semanaSeleccionadaId);
+  }, [flota, semanaSeleccionadaId]);
+
   const sedesCalculadas = useMemo(() => {
-    const sedesUnicas = Array.from(new Set([...sedesConfig.map(s => s.sede), ...flota.map(f => f.concesionario)]));
+    const sedesUnicas = Array.from(new Set([...sedesConfig.map(s => s.sede), ...flotaFiltradaSemana.map(f => f.concesionario)]));
     return sedesUnicas.map((sedeNombre) => {
       const configExistente = sedesConfig.find(s => s.sede.trim().toLowerCase() === sedeNombre.trim().toLowerCase());
       const penVal = configExistente ? configExistente.pen : 0;
-      const itemsSede = flota.filter((item) => item.concesionario.trim().toLowerCase() === sedeNombre.trim().toLowerCase());
+      const itemsSede = flotaFiltradaSemana.filter((item) => item.concesionario.trim().toLowerCase() === sedeNombre.trim().toLowerCase());
       const totalPagoCorte = itemsSede.reduce((sum, item) => sum + (Number(item.pagoConcesionario) || 0), 0);
       const totalComision = itemsSede.reduce((sum, item) => sum + ((Number(item.costoConcesionario) || 0) * 0.01), 0);
 
       return { sede: sedeNombre, pen: penVal, pagoCorte: totalPagoCorte, comision: totalComision, ventasCount: itemsSede.length };
     });
-  }, [flota, sedesConfig]);
+  }, [flotaFiltradaSemana, sedesConfig]);
 
-  const totalCostoConcesionario = flota.reduce((acc, curr) => acc + (Number(curr.costoConcesionario) || 0), 0);
-  const totalPagoConcesionario = flota.reduce((acc, curr) => acc + (Number(curr.pagoConcesionario) || 0), 0);
-  const totalProyeccionInteres = flota.reduce((acc, curr) => acc + (Number(curr.proyeccionInteres) || 0), 0);
+  const totalCostoConcesionario = flotaFiltradaSemana.reduce((acc, curr) => acc + (Number(curr.costoConcesionario) || 0), 0);
+  const totalPagoConcesionario = flotaFiltradaSemana.reduce((acc, curr) => acc + (Number(curr.pagoConcesionario) || 0), 0);
+  const totalProyeccionInteres = flotaFiltradaSemana.reduce((acc, curr) => acc + (Number(curr.proyeccionInteres) || 0), 0);
   const totalPagoCorte = sedesCalculadas.reduce((acc, curr) => acc + curr.pagoCorte, 0);
   const totalComisionSedes = sedesCalculadas.reduce((acc, curr) => acc + curr.comision, 0);
   const totalPenSedes = sedesCalculadas.reduce((acc, curr) => acc + curr.pen, 0);
@@ -290,17 +307,24 @@ export default function RueddaControlArrendamiento() {
               {activeTab === 'semanal' && 'Reporte Semanal de Cánones y Cobranza'}
             </h1>
             
-            {/* FILTRO DE SEMANA DE CORTE */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: cardBg, padding: '6px 12px', borderRadius: '6px', border: `1px solid ${borderColor}` }}>
-              <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#D96B27' }}>📅 Semana de Corte:</span>
+            {/* SELECTOR DE SEMANA DE CORTE COMPACTO */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: cardBg, padding: '4px 10px', borderRadius: '6px', border: `1px solid ${borderColor}` }}>
               <select 
-                value={semanaSeleccionada} 
-                onChange={(e) => setSemanaSeleccionada(e.target.value)} 
-                style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
-                {cortesSemanales.map((corte, idx) => (
-                  <option key={idx} value={corte}>{corte}</option>
+                value={semanaSeleccionadaId} 
+                onChange={(e) => setSemanaSeleccionadaId(Number(e.target.value))} 
+                style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px 6px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
+                {semanasCortas.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    Semana de corte: {s.id} ({s.fechaRango})
+                  </option>
                 ))}
               </select>
+              <button 
+                onClick={agregarNuevaSemana}
+                title="Crear nueva semana de corte"
+                style={{ background: '#D96B27', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}>
+                + Nueva semana
+              </button>
             </div>
           </div>
 
@@ -314,7 +338,7 @@ export default function RueddaControlArrendamiento() {
           <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
             <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '10px', padding: '25px', width: '680px', maxWidth: '92%', maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', borderBottom: `1px solid ${borderColor}`, paddingBottom: '10px' }}>
-                <h3 style={{ margin: 0, color: '#D96B27', fontSize: '17px' }}>Registrar Nueva Venta de Flota 💚</h3>
+                <h3 style={{ margin: 0, color: '#D96B27', fontSize: '17px' }}>Registrar Nueva Venta para {semanaActualObj.label} 💚</h3>
                 <button onClick={() => setShowModal(false)} style={{ background: 'transparent', border: 'none', color: textMain, fontSize: '18px', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
               </div>
 
@@ -450,8 +474,8 @@ export default function RueddaControlArrendamiento() {
           <div>
             <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '16px', overflowX: 'auto', marginBottom: '20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                <h3 style={{ margin: 0, fontSize: '15px', color: '#D96B27' }}>Matriz de Ventas y Unidades Registradas</h3>
-                <span style={{ fontSize: '12px', opacity: 0.7 }}>Total Registros: {flota.length}</span>
+                <h3 style={{ margin: 0, fontSize: '15px', color: '#D96B27' }}>Matriz de Ventas — {semanaActualObj.label} ({semanaActualObj.fechaRango})</h3>
+                <span style={{ fontSize: '12px', opacity: 0.7 }}>Registros en esta semana: {flotaFiltradaSemana.length}</span>
               </div>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', whiteSpace: 'nowrap', textAlign: 'left' }}>
                 <thead>
@@ -474,25 +498,36 @@ export default function RueddaControlArrendamiento() {
                   </tr>
                 </thead>
                 <tbody>
-                  {flota.map((item, index) => (
-                    <tr key={index} style={{ borderBottom: `1px solid ${borderColor}`, background: index % 2 === 0 ? (isDark ? '#1e1e1e' : '#ffffff') : (isDark ? '#161616' : '#f8fafc') }}>
-                      <td style={{ padding: '6px' }}><input type="text" value={item.fecha} onChange={(e) => handleFlotaChange(index, 'fecha', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="text" value={item.concesionario} onChange={(e) => handleFlotaChange(index, 'concesionario', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '150px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="text" value={item.plan} onChange={(e) => handleFlotaChange(index, 'plan', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '110px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="text" value={item.cliente} onChange={(e) => handleFlotaChange(index, 'cliente', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '150px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="text" value={item.telefono} onChange={(e) => handleFlotaChange(index, 'telefono', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '100px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="number" value={Number(item.inicial || 0).toFixed(2)} onChange={(e) => handleFlotaChange(index, 'inicial', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '80px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="text" value={item.cuota} onChange={(e) => handleFlotaChange(index, 'cuota', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '75px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="number" value={Number(item.canon || 0).toFixed(2)} onChange={(e) => handleFlotaChange(index, 'canon', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '80px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="text" value={item.marca} onChange={(e) => handleFlotaChange(index, 'marca', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="text" value={item.moto} onChange={(e) => handleFlotaChange(index, 'moto', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="text" value={item.imei} onChange={(e) => handleFlotaChange(index, 'imei', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '110px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="text" value={item.certificado} onChange={(e) => handleFlotaChange(index, 'certificado', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="number" value={item.costoConcesionario} onChange={(e) => handleFlotaChange(index, 'costoConcesionario', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="number" value={Number(item.pagoConcesionario || 0).toFixed(2)} onChange={(e) => handleFlotaChange(index, 'pagoConcesionario', parseFloat(e.target.value))} style={{ background: inputBg, color: '#10b981', fontWeight: 'bold', border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
-                      <td style={{ padding: '6px', color: '#38bdf8', fontWeight: 'bold' }}>${(Number(item.proyeccionInteres) || 0).toFixed(2)}</td>
+                  {flotaFiltradaSemana.length === 0 ? (
+                    <tr>
+                      <td colSpan={15} style={{ textAlign: 'center', padding: '30px', opacity: 0.6 }}>
+                        No hay ventas registradas para esta semana todavía. Haz clic en "Registrar Nueva Venta" para empezar. 🏍️💨
+                      </td>
                     </tr>
-                  ))}
+                  ) : (
+                    flotaFiltradaSemana.map((item, index) => {
+                      const realIndex = flota.findIndex(f => f === item);
+                      return (
+                        <tr key={index} style={{ borderBottom: `1px solid ${borderColor}`, background: index % 2 === 0 ? (isDark ? '#1e1e1e' : '#ffffff') : (isDark ? '#161616' : '#f8fafc') }}>
+                          <td style={{ padding: '6px' }}><input type="text" value={item.fecha} onChange={(e) => handleFlotaChange(realIndex, 'fecha', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
+                          <td style={{ padding: '6px' }}><input type="text" value={item.concesionario} onChange={(e) => handleFlotaChange(realIndex, 'concesionario', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '150px' }} /></td>
+                          <td style={{ padding: '6px' }}><input type="text" value={item.plan} onChange={(e) => handleFlotaChange(realIndex, 'plan', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '110px' }} /></td>
+                          <td style={{ padding: '6px' }}><input type="text" value={item.cliente} onChange={(e) => handleFlotaChange(realIndex, 'cliente', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '150px' }} /></td>
+                          <td style={{ padding: '6px' }}><input type="text" value={item.telefono} onChange={(e) => handleFlotaChange(realIndex, 'telefono', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '100px' }} /></td>
+                          <td style={{ padding: '6px' }}><input type="number" value={Number(item.inicial || 0).toFixed(2)} onChange={(e) => handleFlotaChange(realIndex, 'inicial', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '80px' }} /></td>
+                          <td style={{ padding: '6px' }}><input type="text" value={item.cuota} onChange={(e) => handleFlotaChange(realIndex, 'cuota', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '75px' }} /></td>
+                          <td style={{ padding: '6px' }}><input type="number" value={Number(item.canon || 0).toFixed(2)} onChange={(e) => handleFlotaChange(realIndex, 'canon', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '80px' }} /></td>
+                          <td style={{ padding: '6px' }}><input type="text" value={item.marca} onChange={(e) => handleFlotaChange(realIndex, 'marca', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
+                          <td style={{ padding: '6px' }}><input type="text" value={item.moto} onChange={(e) => handleFlotaChange(realIndex, 'moto', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
+                          <td style={{ padding: '6px' }}><input type="text" value={item.imei} onChange={(e) => handleFlotaChange(realIndex, 'imei', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '110px' }} /></td>
+                          <td style={{ padding: '6px' }}><input type="text" value={item.certificado} onChange={(e) => handleFlotaChange(realIndex, 'certificado', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
+                          <td style={{ padding: '6px' }}><input type="number" value={item.costoConcesionario} onChange={(e) => handleFlotaChange(realIndex, 'costoConcesionario', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
+                          <td style={{ padding: '6px' }}><input type="number" value={Number(item.pagoConcesionario || 0).toFixed(2)} onChange={(e) => handleFlotaChange(realIndex, 'pagoConcesionario', parseFloat(e.target.value))} style={{ background: inputBg, color: '#10b981', fontWeight: 'bold', border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
+                          <td style={{ padding: '6px', color: '#38bdf8', fontWeight: 'bold' }}>${(Number(item.proyeccionInteres) || 0).toFixed(2)}</td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
@@ -502,7 +537,7 @@ export default function RueddaControlArrendamiento() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <p style={{ margin: 0, fontSize: '13px', opacity: 0.8, fontWeight: 'bold' }}>TOTAL DE PAGO A REALIZAR:</p>
-                  <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: '#10b981' }}>Corte: {semanaSeleccionada}</p>
+                  <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: '#10b981' }}>{semanaActualObj.label} ({semanaActualObj.fechaRango})</p>
                 </div>
                 <h2 style={{ margin: 0, fontSize: '24px', fontWeight: '900', color: '#10b981' }}>
                   ${totalPagoConcesionario.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -515,8 +550,8 @@ export default function RueddaControlArrendamiento() {
         {/* 2. VENTANA: REPORTE DE PAGO */}
         {activeTab === 'pagos' && (
           <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '20px', maxWidth: '900px' }}>
-            <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', color: '#D96B27' }}>Sincronización y Liquidación por Sede ({semanaSeleccionada})</h3>
-            <p style={{ fontSize: '12px', opacity: 0.6, margin: '0 0 16px 0' }}>Cálculos consolidados por concesionario en tiempo real.</p>
+            <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', color: '#D96B27' }}>Sincronización y Liquidación por Sede — {semanaActualObj.label}</h3>
+            <p style={{ fontSize: '12px', opacity: 0.6, margin: '0 0 16px 0' }}>Cálculos consolidados por concesionario en tiempo real para este periodo.</p>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
               <thead>
                 <tr style={{ background: isDark ? '#1c1c38' : '#e2e8f0', color: textMain, borderBottom: '2px solid #D96B27' }}>
@@ -548,7 +583,7 @@ export default function RueddaControlArrendamiento() {
                 ))}
                 <tr style={{ background: isDark ? '#262626' : '#f1f5f9', borderTop: '2px solid #D96B27', fontWeight: 'bold' }}>
                   <td style={{ padding: '12px', color: '#D96B27' }}>TOTALES GENERALES:</td>
-                  <td style={{ padding: '12px', textAlign: 'center', color: '#D96B27' }}>{flota.length}</td>
+                  <td style={{ padding: '12px', textAlign: 'center', color: '#D96B27' }}>{flotaFiltradaSemana.length}</td>
                   <td style={{ padding: '12px', color: '#10b981', fontSize: '14px' }}>${totalPagoCorte.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                   <td style={{ padding: '12px', color: '#38bdf8', fontSize: '14px' }}>${totalComisionSedes.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                   <td style={{ padding: '12px', color: '#ef4444', fontSize: '14px' }}>${totalPenSedes.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
@@ -562,8 +597,8 @@ export default function RueddaControlArrendamiento() {
         {activeTab === 'metricas' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
             <div style={{ background: cardBg, border: `1px solid ${borderColor}`, padding: '20px', borderRadius: '8px', borderLeft: '4px solid #D96B27' }}>
-              <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Total Unidades Activas</p>
-              <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0 0 0', color: '#D96B27' }}>{flota.length}</h2>
+              <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Unidades en {semanaActualObj.label}</p>
+              <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0 0 0', color: '#D96B27' }}>{flotaFiltradaSemana.length}</h2>
             </div>
             <div style={{ background: cardBg, border: `1px solid ${borderColor}`, padding: '20px', borderRadius: '8px', borderLeft: '4px solid #10b981' }}>
               <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Costo Total Concesionario</p>
@@ -579,13 +614,13 @@ export default function RueddaControlArrendamiento() {
         {/* 4. VENTANA: REPORTE SEMANAL */}
         {activeTab === 'semanal' && (
           <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '20px', maxWidth: '850px' }}>
-            <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#D96B27' }}>RUEDDA* - Resumen Ejecutivo de Cánones y Cobranza</h3>
+            <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#D96B27' }}>RUEDDA* — Resumen Ejecutivo de Cánones y Cobranza</h3>
             <p style={{ fontSize: '13px', lineHeight: '1.6', opacity: 0.9 }}>
-              Seguimiento semanal de cobranzas y proyecciones financieras automatizadas para el periodo seleccionado: <strong>{semanaSeleccionada}</strong>.
+              Seguimiento semanal de cobranzas y proyecciones financieras automatizadas para <strong>{semanaActualObj.label} ({semanaActualObj.fechaRango})</strong>.
             </p>
             <div style={{ marginTop: '20px', padding: '14px', background: isDark ? '#1c1c38' : '#e0f2fe', borderRadius: '6px', borderLeft: '3px solid #0284c7' }}>
               <p style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: isDark ? '#38bdf8' : '#0369a1' }}>
-                💡 Proyección de Interés Acumulada de la Flota: <strong style={{ color: '#38bdf8' }}>${totalProyeccionInteres.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong> 🏍️💨
+                💡 Proyección de Interés Acumulada en esta semana: <strong style={{ color: '#38bdf8' }}>${totalProyeccionInteres.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong> 🏍️💨
               </p>
             </div>
           </div>
