@@ -10,17 +10,20 @@ export default function RueddaControlPanel() {
     { fecha: '11/09/2026', concesionario: 'Velocity Motos C.A.', plan: '6 Meses - Semanal', cliente: 'Marcos Sleyder Bozo Perez', telefono: '584243571388', inicial: 506.00, cuota: 'Viernes', canon: 125.66, pagoInicial: 'Efectivo', marca: 'Escuda', moto: 'F16-EXTREME', fechaCorte: '', imei: '863874086467614', certificado: 'AA-1329414', costoConcesionario: 1840.00, pagoConcesionario: 1334.00, totalPago: 0.00, comisiones: 18.40, interes: 1681.94 }
   ]);
 
-  // Estado para la Tabla de Sedes (con cálculo automático de sumas)
-  const [sedes, setSedes] = useState([
-    { sede: 'Motores Del Este VIP C.A.', pagoCorte: 2697.00, comision: 37.20, pen: 0.00 },
-    { sede: 'Urdaneta Motors 2025 C.A.', pagoCorte: 0.00, comision: 0.00, pen: 0.00 },
-    { sede: 'Turbo Motos C.A', pagoCorte: 0.00, comision: 0.00, pen: 0.00 },
-    { sede: 'Velocity Motos C.A.', pagoCorte: 1334.00, comision: 18.40, pen: 0.00 },
-    { sede: 'INVERSIONES CHT30, C.A', pagoCorte: 4712.50, comision: 65.00, pen: 0.00 },
-    { sede: 'AKOX C.A.', pagoCorte: 978.02, comision: 13.49, pen: 0.00 },
-    { sede: 'NECATIX C.A', pagoCorte: 1392.00, comision: 19.20, pen: 0.00 },
-    { sede: 'SUPER MOTOS', pagoCorte: 0.00, comision: 0.00, pen: 0.00 }
-  ]);
+  // Lista base de Sedes/Concesionarios
+  const listaSedesBase = [
+    'Motores Del Este VIP C.A.',
+    'Urdaneta Motors 2025 C.A.',
+    'Turbo Motos C.A',
+    'Velocity Motos C.A.',
+    'INVERSIONES CHT30, C.A',
+    'AKOX C.A.',
+    'NECATIX C.A',
+    'SUPER MOTOS'
+  ];
+
+  // Estado independiente para penalizaciones (Pen) que sí se pueden editar a mano en la tabla pequeña
+  const [penalizaciones, setPenalizaciones] = useState<{ [key: string]: number }>({});
 
   // Manejador para actualizar datos de la flota en tiempo real
   const handleFlotaChange = (index: number, field: string, value: any) => {
@@ -29,17 +32,34 @@ export default function RueddaControlPanel() {
     setFlota(nuevaFlota);
   };
 
-  // Manejador para actualizar datos de sedes y recalcular sumas automáticamente
-  const handleSedeChange = (index: number, field: string, value: string) => {
-    const nuevasSedes = [...sedes];
-    nuevasSedes[index] = { ...nuevasSedes[index], [field]: parseFloat(value) || 0 };
-    setSedes(nuevasSedes);
+  // Manejador para editar la penalización de una sede específica
+  const handlePenChange = (sede: string, value: string) => {
+    setPenalizaciones({
+      ...penalizaciones,
+      [sede]: parseFloat(value) || 0
+    });
   };
 
-  // Cálculos automáticos totales de la tabla de sedes
-  const totalPagoCorte = sedes.reduce((acc, curr) => acc + curr.pagoCorte, 0);
-  const totalComision = sedes.reduce((acc, curr) => acc + curr.comision, 0);
-  const totalPen = sedes.reduce((acc, curr) => acc + curr.pen, 0);
+  // CÁLCULO AUTOMÁTICO: Sincroniza el Pago Corte y la Comisión (1%) directo desde la tabla de flota
+  const sedesCalculadas = listaSedesBase.map((sede) => {
+    // Filtramos los registros de flota que pertenecen a esta sede
+    const itemsSede = flota.filter(f => f.concesionario.trim().toLowerCase() === sede.trim().toLowerCase());
+    
+    // Sumamos el pago concesionario total para el Pago Corte
+    const pagoCorte = itemsSede.reduce((acc, curr) => acc + (curr.pagoConcesionario || 0), 0);
+    
+    // Sumamos las comisiones correspondientes
+    const comision = itemsSede.reduce((acc, curr) => acc + (curr.comisiones || 0), 0);
+    
+    const pen = penalizaciones[sede] || 0;
+
+    return { sede, pagoCorte, comision, pen };
+  });
+
+  // Totales generales automáticos de la tabla de sedes
+  const totalPagoCorte = sedesCalculadas.reduce((acc, curr) => acc + curr.pagoCorte, 0);
+  const totalComision = sedesCalculadas.reduce((acc, curr) => acc + curr.comision, 0);
+  const totalPen = sedesCalculadas.reduce((acc, curr) => acc + curr.pen, 0);
 
   return (
     <div style={{ backgroundColor: '#121212', color: '#f3f4f6', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', padding: '20px' }}>
@@ -54,7 +74,6 @@ export default function RueddaControlPanel() {
         </div>
       </div>
 
-      {/* Contenedor Principal en Grid para ambas tablas */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
 
         {/* 1. TABLA PRINCIPAL DE FLOTA (Editable) */}
@@ -110,51 +129,50 @@ export default function RueddaControlPanel() {
           </table>
         </div>
 
-        {/* 2. TABLA PEQUEÑA DE SEDES (Editable + Cálculo Automático de Sumas) */}
-        <div style={{ background: '#1a1a1a', border: '1px solid #333', borderRadius: '8px', padding: '16px', maxWidth: '600px' }}>
-          <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#D96B27' }}>Resumen por Sedes (Cálculo Automático)</h3>
+        {/* 2. TABLA PEQUEÑA DE SEDES (Sincronización Automática con la Flota) */}
+        <div style={{ background: '#1a1a1a', border: '1px solid #333', borderRadius: '8px', padding: '16px', maxWidth: '650px' }}>
+          <h3 style={{ margin: '0 0 6px 0', fontSize: '16px', color: '#D96B27' }}>Resumen por Sedes (Sincronizado Automáticamente)</h3>
+          <p style={{ fontSize: '11px', color: '#9ca3af', margin: '0 0 12px 0' }}>El "Pago Corte" y la "Comisión" se calculan sumando los pagos de la tabla superior según el concesionario.</p>
+          
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
             <thead>
               <tr style={{ background: '#1c1c38', color: '#fff', borderBottom: '2px solid #D96B27' }}>
                 <th style={{ padding: '10px' }}>SEDE</th>
-                <th style={{ padding: '10px' }}>Pago Corte</th>
-                <th style={{ padding: '10px' }}>Comisión</th>
-                <th style={{ padding: '10px' }}>Pen</th>
+                <th style={{ padding: '10px' }}>Pago Corte (Auto)</th>
+                <th style={{ padding: '10px' }}>Comisión (Auto)</th>
+                <th style={{ padding: '10px' }}>Penalización</th>
               </tr>
             </thead>
             <tbody>
-              {sedes.map((item, index) => (
+              {sedesCalculadas.map((item, index) => (
                 <tr key={index} style={{ borderBottom: '1px solid #2a2a2a' }}>
                   <td style={{ padding: '8px', fontWeight: 'bold', color: '#93c5fd' }}>{item.sede}</td>
-                  <td style={{ padding: '8px' }}>
-                    <input 
-                      type="number" 
-                      value={item.pagoCorte} 
-                      onChange={(e) => handleSedeChange(index, 'pagoCorte', e.target.value)} 
-                      style={{ background: '#262626', color: '#10b981', border: '1px solid #444', padding: '4px', borderRadius: '4px', width: '100px', fontWeight: 'bold' }} 
-                    />
+                  
+                  {/* Pago Corte automático calculado desde arriba */}
+                  <td style={{ padding: '8px', color: '#10b981', fontWeight: 'bold' }}>
+                    ${item.pagoCorte.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
                   </td>
-                  <td style={{ padding: '8px' }}>
-                    <input 
-                      type="number" 
-                      value={item.comision} 
-                      onChange={(e) => handleSedeChange(index, 'comision', e.target.value)} 
-                      style={{ background: '#262626', color: '#38bdf8', border: '1px solid #444', padding: '4px', borderRadius: '4px', width: '90px', fontWeight: 'bold' }} 
-                    />
+                  
+                  {/* Comisión automática calculada desde arriba */}
+                  <td style={{ padding: '8px', color: '#38bdf8', fontWeight: 'bold' }}>
+                    ${item.comision.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
                   </td>
+
+                  {/* Penalización editable a mano */}
                   <td style={{ padding: '8px' }}>
                     <input 
                       type="number" 
-                      value={item.pen} 
-                      onChange={(e) => handleSedeChange(index, 'pen', e.target.value)} 
+                      value={penalizaciones[item.sede] || 0} 
+                      onChange={(e) => handlePenChange(item.sede, e.target.value)} 
                       style={{ background: '#262626', color: '#ef4444', border: '1px solid #444', padding: '4px', borderRadius: '4px', width: '80px', fontWeight: 'bold' }} 
                     />
                   </td>
                 </tr>
               ))}
+
               {/* Fila de Totales Automáticos */}
               <tr style={{ background: '#262626', borderTop: '2px solid #D96B27', fontWeight: 'bold' }}>
-                <td style={{ padding: '10px', color: '#D96B27' }}>TOTALES AUTOMÁTICOS:</td>
+                <td style={{ padding: '10px', color: '#D96B27' }}>TOTALES:</td>
                 <td style={{ padding: '10px', color: '#10b981' }}>${totalPagoCorte.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</td>
                 <td style={{ padding: '10px', color: '#38bdf8' }}>${totalComision.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</td>
                 <td style={{ padding: '10px', color: '#ef4444' }}>${totalPen.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</td>
