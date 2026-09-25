@@ -335,6 +335,7 @@ export default function RueddaControlArrendamiento() {
     <span style={{ fontWeight: 700, fontSize: '12px', color: '#fff' }}>*</span>
     <span style={{ fontSize: '12px', marginLeft: '4px' }}>◀</span>
   </div>
+  
 )}
             </button>
           </div>
