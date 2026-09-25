@@ -1,22 +1,23 @@
 'use client';
 import { useState, useMemo } from 'react';
 
-export default function RueddaDashboardPanel() {
+export default function RueddaControlArrendamiento() {
   // Estado para el tema visual ('dark' o 'light')
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
-  // Estado para la sección activa en el panel lateral
+  // Estado para la pestaña activa en el panel lateral
   const [activeTab, setActiveTab] = useState<'ventas' | 'pagos' | 'metricas' | 'semanal'>('ventas');
 
-  // Estado para la Tabla Principal de Flota
+  // Estado para el Registro Maestro de Flota / Ventas (Inspirado en la pestaña 'Ventas' / 'REPORTE DE PAGO')
   const [flota, setFlota] = useState([
-    { fecha: '07/09/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Albert Rafael Salas Martínez', telefono: '584167171297', inicial: 440.00, cuota: 'Lunes', canon: 109.27, pagoInicial: 'Mixto', marca: 'Escuda', moto: 'F16-EXTREME', fechaCorte: '', imei: '863874086467440', certificado: 'AA-1278490', costoConcesionario: 1600.00, pagoConcesionario: 1160.00, totalPago: 0.00, comisiones: 0.00, interes: 1462.56 },
-    { fecha: '07/09/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Freddy David Perez Peña', telefono: '584126034365', inicial: 277.75, cuota: 'Martes', canon: 68.98, pagoInicial: 'Efectivo', marca: 'Escuda', moto: 'CG-HERO', fechaCorte: '', imei: '863874086280066', certificado: 'AA-1329061', costoConcesionario: 1010.00, pagoConcesionario: 732.25, totalPago: 0.00, comisiones: 0.00, interes: 923.24 },
-    { fecha: '08/09/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Angel Eduardo Hilarraza Márquez', telefono: '584129107146', inicial: 341.00, cuota: 'Viernes', canon: 84.69, pagoInicial: 'Efectivo', marca: 'Escuda', moto: 'CG-HERO', fechaCorte: '', imei: '863874086466012', certificado: 'AA-1329364', costoConcesionario: 1240.00, pagoConcesionario: 899.00, totalPago: -6042.20, comisiones: 12.40, interes: 1133.48 },
-    { fecha: '11/09/2026', concesionario: 'Velocity Motos C.A.', plan: '6 Meses - Semanal', cliente: 'Marcos Sleyder Bozo Perez', telefono: '584243571388', inicial: 506.00, cuota: 'Viernes', canon: 125.66, pagoInicial: 'Efectivo', marca: 'Escuda', moto: 'F16-EXTREME', fechaCorte: '', imei: '863874086467614', certificado: 'AA-1329414', costoConcesionario: 1840.00, pagoConcesionario: 1334.00, totalPago: 0.00, comisiones: 18.40, interes: 1681.94 }
+    { fecha: '10/08/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Alberto Rafael Salas Martinez', telefono: '584167171297', cuota: 'Lunes', canon: 109.27, inicial: 440.00, marca: 'Escuda', moto: 'F16-EXTREME', fechaCorte: '13/08/2026', imei: '863874086467440', certificado: 'AA-1278490', costoConcesionario: 1600.00, pagoConcesionario: 1160.00, comisionVendedor: 64.80, proyeccionInteres: 1462.56 },
+    { fecha: '11/08/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Freddy David Perez Peña', telefono: '584126034365', cuota: 'Martes', canon: 68.98, inicial: 277.75, marca: 'Escuda', moto: 'CG-HERO', fechaCorte: '', imei: '863874086280066', certificado: 'AA-1329061', costoConcesionario: 1010.00, pagoConcesionario: 732.25, comisionVendedor: 0.00, proyeccionInteres: 923.24 },
+    { fecha: '11/08/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Jesus German Barrios Yecerra', telefono: '584241323953', cuota: 'Martes', canon: 67.61, inicial: 272.25, marca: 'Escuda', moto: 'CG-HERO', fechaCorte: '', imei: '863874086325747', certificado: 'AA-1329049', costoConcesionario: 990.00, pagoConcesionario: 717.75, comisionVendedor: 0.00, proyeccionInteres: 904.96 },
+    { fecha: '11/08/2026', concesionario: 'INVERSIONES CHT30, C.A', plan: '6 Meses - Semanal', cliente: 'Marcos Sleyder Bozo Perez', telefono: '584243571388', cuota: 'Viernes', canon: 125.66, inicial: 506.00, marca: 'Escuda', moto: 'F16-EXTREME', fechaCorte: '', imei: '863874086467614', certificado: 'AA-1329414', costoConcesionario: 1840.00, pagoConcesionario: 1334.00, comisionVendedor: 18.40, proyeccionInteres: 1681.94 },
+    { fecha: '12/08/2026', concesionario: 'NECATIX C.A', plan: '6 Meses - Semanal', cliente: 'Carlos Eduardo Gomez', telefono: '584129876543', cuota: 'Jueves', canon: 95.00, inicial: 380.00, marca: 'Escuda', moto: 'F16-EXTREME', fechaCorte: '', imei: '863874086499111', certificado: 'AA-1329500', costoConcesionario: 1400.00, pagoConcesionario: 1000.00, comisionVendedor: 14.00, proyeccionInteres: 1250.00 }
   ]);
 
-  // Lista base de Sedes / Concesionarios
+  // Configuración de Sedes / Concesionarios (Con comisiones y penalizaciones)
   const [sedesConfig, setSedesConfig] = useState([
     { sede: 'Motores Del Este VIP C.A.', comision: 37.20, pen: 0.00 },
     { sede: 'Urdaneta Motors 2025 C.A.', comision: 0.00, pen: 0.00 },
@@ -25,44 +26,48 @@ export default function RueddaDashboardPanel() {
     { sede: 'INVERSIONES CHT30, C.A', comision: 65.00, pen: 0.00 },
     { sede: 'AKOX C.A.', comision: 13.49, pen: 0.00 },
     { sede: 'NECATIX C.A', comision: 19.20, pen: 0.00 },
-    { sede: 'SUPER MOTOS', comision: 0.00, pen: 0.00 }
+    { sede: 'SUPER MOTOS TROPICAL C.A', comision: 0.00, pen: 0.00 }
   ]);
 
-  // Manejador para actualizar datos de la flota
+  // Manejador para actualizar celdas de la flota
   const handleFlotaChange = (index: number, field: string, value: any) => {
     const nuevaFlota = [...flota];
     nuevaFlota[index] = { ...nuevaFlota[index], [field]: value };
     setFlota(nuevaFlota);
   };
 
-  // Manejador para actualizar comisiones o penalizaciones de las sedes
-  const handleSedeConfigChange = (index: number, field: string, value: string) => {
+  // Manejador para comisiones/penalizaciones de sedes
+  const handleSedeChange = (index: number, field: string, value: string) => {
     const nuevas = [...sedesConfig];
     nuevas[index] = { ...nuevas[index], [field]: parseFloat(value) || 0 };
     setSedesConfig(nuevas);
   };
 
-  // Sincronización automática de "Pago Corte" basado en la flota
+  // Sincronización automática de "Pago Corte" basado en la suma de pagos a concesionario por sede
   const sedesCalculadas = useMemo(() => {
     return sedesConfig.map((s) => {
       const totalPagoCorte = flota
         .filter((item) => item.concesionario.trim().toLowerCase() === s.sede.trim().toLowerCase())
         .reduce((sum, item) => sum + (Number(item.pagoConcesionario) || 0), 0);
 
+      const totalVentasSede = flota.filter((item) => item.concesionario.trim().toLowerCase() === s.sede.trim().toLowerCase()).length;
+
       return {
         ...s,
-        pagoCorte: totalPagoCorte
+        pagoCorte: totalPagoCorte,
+        ventasCount: totalVentasSede
       };
     });
   }, [flota, sedesConfig]);
 
-  // Totales generales
+  // Totales Generales
+  const totalCostoConcesionario = flota.reduce((acc, curr) => acc + (Number(curr.costoConcesionario) || 0), 0);
+  const totalPagoConcesionario = flota.reduce((acc, curr) => acc + (Number(curr.pagoConcesionario) || 0), 0);
   const totalPagoCorte = sedesCalculadas.reduce((acc, curr) => acc + curr.pagoCorte, 0);
-  const totalComision = sedesCalculadas.reduce((acc, curr) => acc + curr.comision, 0);
-  const totalPen = sedesCalculadas.reduce((acc, curr) => acc + curr.pen, 0);
-  const totalFlotaVentas = flota.reduce((acc, curr) => acc + (Number(curr.costoConcesionario) || 0), 0);
+  const totalComisionSedes = sedesCalculadas.reduce((acc, curr) => acc + curr.comision, 0);
+  const totalPenSedes = sedesCalculadas.reduce((acc, curr) => acc + curr.pen, 0);
 
-  // Estilos según el tema seleccionado
+  // Estilos dinámicos según tema
   const isDark = theme === 'dark';
   const bgMain = isDark ? '#121212' : '#f8fafc';
   const textMain = isDark ? '#f3f4f6' : '#1e293b';
@@ -76,82 +81,85 @@ export default function RueddaDashboardPanel() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: bgMain, color: textMain, fontFamily: 'system-ui, sans-serif' }}>
       
-      {/* PANEL LATERAL (SIDEBAR) */}
-      <div style={{ width: '260px', backgroundColor: sidebarBg, color: '#fff', padding: '20px', display: 'flex', flexDirection: 'column', borderRight: '1px solid #333' }}>
-        <div style={{ marginBottom: '30px', borderBottom: '2px solid #D96B27', paddingBottom: '12px' }}>
+      {/* ================= PANEL LATERAL (SIDEBAR) ================= */}
+      <div style={{ width: '270px', backgroundColor: sidebarBg, color: '#fff', padding: '20px', display: 'flex', flexDirection: 'column', borderRight: '1px solid #333', flexShrink: 0 }}>
+        <div style={{ marginBottom: '25px', borderBottom: '2px solid #D96B27', paddingBottom: '12px' }}>
           <h2 style={{ fontSize: '18px', fontWeight: '900', margin: 0, letterSpacing: '1px' }}>
             RUEDDA <span style={{ color: '#D96B27' }}>*</span>
           </h2>
-          <p style={{ fontSize: '11px', color: '#94a3b8', margin: '4px 0 0 0' }}>SISTEMA DE CONTROL OPERATIVO</p>
+          <p style={{ fontSize: '11px', color: '#94a3b8', margin: '4px 0 0 0' }}>CONTROL DE ARRENDAMIENTO</p>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
           <button 
             onClick={() => setActiveTab('ventas')}
-            style={{ textAlign: 'left', background: activeTab === 'ventas' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            style={{ textAlign: 'left', background: activeTab === 'ventas' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px' }}>
             <span>📊</span> Control de Ventas
           </button>
           
           <button 
             onClick={() => setActiveTab('pagos')}
-            style={{ textAlign: 'left', background: activeTab === 'pagos' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            style={{ textAlign: 'left', background: activeTab === 'pagos' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px' }}>
             <span>💳</span> Reporte de Pago
           </button>
 
           <button 
             onClick={() => setActiveTab('metricas')}
-            style={{ textAlign: 'left', background: activeTab === 'metricas' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            style={{ textAlign: 'left', background: activeTab === 'metricas' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px' }}>
             <span>📈</span> Métricas de Venta
           </button>
 
           <button 
             onClick={() => setActiveTab('semanal')}
-            style={{ textAlign: 'left', background: activeTab === 'semanal' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            style={{ textAlign: 'left', background: activeTab === 'semanal' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px' }}>
             <span>📅</span> Reporte Semanal
           </button>
         </div>
 
-        {/* Selector de Tema en el Sidebar */}
+        {/* Selector de Tema */}
         <div style={{ marginTop: 'auto', paddingTop: '20px', borderTop: '1px solid #334155' }}>
           <button 
             onClick={() => setTheme(isDark ? 'light' : 'dark')}
             style={{ width: '100%', background: isDark ? '#334155' : '#475569', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px' }}>
-            {isDark ? '☀️ Cambiar a Modo Claro' : '🌙 Cambiar a Modo Oscuro'}
+            {isDark ? '☀️ Modo Claro' : '🌙 Modo Oscuro'}
           </button>
         </div>
       </div>
 
-      {/* CONTENIDO PRINCIPAL SEGÚN LA PESTAÑA ACTIVA */}
+      {/* ================= CONTENIDO DE LAS PESTAÑAS ================= */}
       <div style={{ flex: 1, padding: '30px', overflowY: 'auto' }}>
         
-        {/* Cabecera superior del contenido */}
+        {/* Cabecera Superior */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', borderBottom: `2px solid ${isDark ? '#333' : '#e2e8f0'}`, paddingBottom: '12px' }}>
           <h1 style={{ fontSize: '20px', fontWeight: 'bold', margin: 0 }}>
-            {activeTab === 'ventas' && 'Control de Ventas y Flota'}
+            {activeTab === 'ventas' && 'Control de Ventas y Registro Maestro de Flota'}
             {activeTab === 'pagos' && 'Reporte de Pago y Liquidación por Sedes'}
-            {activeTab === 'metricas' && 'Métricas y Rendimiento de Ventas Ruedda'}
-            {activeTab === 'semanal' && 'Consolidado de Reporte Semanal'}
+            {activeTab === 'metricas' && 'Métricas de Venta y Distribución Ruedda'}
+            {activeTab === 'semanal' && 'Reporte Semanal de Cánones y Cobranza'}
           </h1>
-          <div style={{ background: '#D96B27', color: '#fff', padding: '6px 12px', borderRadius: '6px', fontWeight: 'bold', fontSize: '13px' }}>
+          <div style={{ background: '#D96B27', color: '#fff', padding: '6px 14px', borderRadius: '6px', fontWeight: 'bold', fontSize: '13px' }}>
             R* 🚗💨
           </div>
         </div>
 
-        {/* 1. VISTA: CONTROL DE VENTAS */}
+        {/* ---------------- 1. VENTANA: CONTROL DE VENTAS ---------------- */}
         {activeTab === 'ventas' && (
           <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '16px', overflowX: 'auto', boxShadow: isDark ? 'none' : '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
-            <h3 style={{ margin: '0 0 12px 0', fontSize: '15px', color: '#D96B27' }}>Registro General de Flota (Editable)</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <h3 style={{ margin: 0, fontSize: '15px', color: '#D96B27' }}>Matriz de Ventas y Unidades Registradas (Editable)</h3>
+              <span style={{ fontSize: '12px', opacity: 0.7 }}>Total Registros: {flota.length}</span>
+            </div>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', whiteSpace: 'nowrap', textAlign: 'left' }}>
               <thead>
                 <tr style={{ background: '#D96B27', color: '#fff' }}>
                   <th style={{ padding: '10px' }}>Fecha</th>
                   <th style={{ padding: '10px' }}>Concesionario</th>
                   <th style={{ padding: '10px' }}>Plan</th>
-                  <th style={{ padding: '10px' }}>Nombre del cliente</th>
+                  <th style={{ padding: '10px' }}>Nombre del Cliente</th>
                   <th style={{ padding: '10px' }}>Nro. Cliente</th>
+                  <th style={{ padding: '10px' }}>Día Cuota</th>
+                  <th style={{ padding: '10px' }}>Canon Semanal</th>
                   <th style={{ padding: '10px' }}>Inicial</th>
-                  <th style={{ padding: '10px' }}>Día cuota</th>
-                  <th style={{ padding: '10px' }}>Canon semanal</th>
                   <th style={{ padding: '10px' }}>Moto</th>
                   <th style={{ padding: '10px' }}>IMEI GPS</th>
                   <th style={{ padding: '10px' }}>Costo Concesionario</th>
@@ -162,13 +170,13 @@ export default function RueddaDashboardPanel() {
                 {flota.map((item, index) => (
                   <tr key={index} style={{ borderBottom: `1px solid ${borderColor}`, background: index % 2 === 0 ? (isDark ? '#1e1e1e' : '#ffffff') : (isDark ? '#161616' : '#f8fafc') }}>
                     <td style={{ padding: '6px' }}><input type="text" value={item.fecha} onChange={(e) => handleFlotaChange(index, 'fecha', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
-                    <td style={{ padding: '6px' }}><input type="text" value={item.concesionario} onChange={(e) => handleFlotaChange(index, 'concesionario', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '150px' }} /></td>
+                    <td style={{ padding: '6px' }}><input type="text" value={item.concesionario} onChange={(e) => handleFlotaChange(index, 'concesionario', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '160px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="text" value={item.plan} onChange={(e) => handleFlotaChange(index, 'plan', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '110px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="text" value={item.cliente} onChange={(e) => handleFlotaChange(index, 'cliente', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '160px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="text" value={item.telefono} onChange={(e) => handleFlotaChange(index, 'telefono', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '100px' }} /></td>
-                    <td style={{ padding: '6px' }}><input type="number" value={item.inicial} onChange={(e) => handleFlotaChange(index, 'inicial', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '70px' }} /></td>
-                    <td style={{ padding: '6px' }}><input type="text" value={item.cuota} onChange={(e) => handleFlotaChange(index, 'cuota', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '70px' }} /></td>
-                    <td style={{ padding: '6px' }}><input type="number" value={item.canon} onChange={(e) => handleFlotaChange(index, 'canon', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '70px' }} /></td>
+                    <td style={{ padding: '6px' }}><input type="text" value={item.cuota} onChange={(e) => handleFlotaChange(index, 'cuota', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '75px' }} /></td>
+                    <td style={{ padding: '6px' }}><input type="number" value={item.canon} onChange={(e) => handleFlotaChange(index, 'canon', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '80px' }} /></td>
+                    <td style={{ padding: '6px' }}><input type="number" value={item.inicial} onChange={(e) => handleFlotaChange(index, 'inicial', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '80px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="text" value={item.moto} onChange={(e) => handleFlotaChange(index, 'moto', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="text" value={item.imei} onChange={(e) => handleFlotaChange(index, 'imei', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '120px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="number" value={item.costoConcesionario} onChange={(e) => handleFlotaChange(index, 'costoConcesionario', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
@@ -180,15 +188,16 @@ export default function RueddaDashboardPanel() {
           </div>
         )}
 
-        {/* 2. VISTA: REPORTE DE PAGO */}
+        {/* ---------------- 2. VENTANA: REPORTE DE PAGO ---------------- */}
         {activeTab === 'pagos' && (
-          <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '20px', maxWidth: '750px', boxShadow: isDark ? 'none' : '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
-            <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', color: '#D96B27' }}>Control de Liquidación por Sede</h3>
-            <p style={{ fontSize: '12px', opacity: 0.6, margin: '0 0 16px 0' }}>Los montos de "Pago Corte" se sincronizan automáticamente desde el módulo de ventas.</p>
+          <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '20px', maxWidth: '850px', boxShadow: isDark ? 'none' : '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+            <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', color: '#D96B27' }}>Sincronización de Pagos y Liquidación por Sede</h3>
+            <p style={{ fontSize: '12px', opacity: 0.6, margin: '0 0 16px 0' }}>El campo "Pago Corte" se calcula automáticamente sumando los pagos de concesionario de la pestaña de Ventas.</p>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
               <thead>
                 <tr style={{ background: isDark ? '#1c1c38' : '#e2e8f0', color: textMain, borderBottom: '2px solid #D96B27' }}>
-                  <th style={{ padding: '10px' }}>SEDE</th>
+                  <th style={{ padding: '10px' }}>SEDE / CONCESIONARIO</th>
+                  <th style={{ padding: '10px' }}>Ventas</th>
                   <th style={{ padding: '10px' }}>Pago Corte (Auto)</th>
                   <th style={{ padding: '10px' }}>Comisión</th>
                   <th style={{ padding: '10px' }}>Penalización</th>
@@ -198,6 +207,11 @@ export default function RueddaDashboardPanel() {
                 {sedesCalculadas.map((item, index) => (
                   <tr key={index} style={{ borderBottom: `1px solid ${borderColor}` }}>
                     <td style={{ padding: '10px', fontWeight: 'bold' }}>{item.sede}</td>
+                    <td style={{ padding: '10px', textAlign: 'center' }}>
+                      <span style={{ background: '#D96B27', color: '#fff', padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold' }}>
+                        {item.ventasCount}
+                      </span>
+                    </td>
                     <td style={{ padding: '10px', fontWeight: 'bold', color: '#10b981', fontSize: '14px' }}>
                       ${item.pagoCorte.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
                     </td>
@@ -205,7 +219,7 @@ export default function RueddaDashboardPanel() {
                       <input 
                         type="number" 
                         value={item.comision} 
-                        onChange={(e) => handleSedeConfigChange(index, 'comision', e.target.value)} 
+                        onChange={(e) => handleSedeChange(index, 'comision', e.target.value)} 
                         style={{ background: inputBg, color: '#38bdf8', border: `1px solid ${inputBorder}`, padding: '6px', borderRadius: '4px', width: '100px', fontWeight: 'bold' }} 
                       />
                     </td>
@@ -213,51 +227,96 @@ export default function RueddaDashboardPanel() {
                       <input 
                         type="number" 
                         value={item.pen} 
-                        onChange={(e) => handleSedeConfigChange(index, 'pen', e.target.value)} 
+                        onChange={(e) => handleSedeChange(index, 'pen', e.target.value)} 
                         style={{ background: inputBg, color: '#ef4444', border: `1px solid ${inputBorder}`, padding: '6px', borderRadius: '4px', width: '90px', fontWeight: 'bold' }} 
                       />
                     </td>
                   </tr>
                 ))}
-                {/* Totales */}
+                {/* Fila de Totales */}
                 <tr style={{ background: isDark ? '#262626' : '#f1f5f9', borderTop: '2px solid #D96B27', fontWeight: 'bold' }}>
                   <td style={{ padding: '12px', color: '#D96B27' }}>TOTALES GENERALES:</td>
+                  <td style={{ padding: '12px', textAlign: 'center', color: '#D96B27' }}>{flota.length}</td>
                   <td style={{ padding: '12px', color: '#10b981', fontSize: '14px' }}>${totalPagoCorte.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</td>
-                  <td style={{ padding: '12px', color: '#38bdf8', fontSize: '14px' }}>${totalComision.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</td>
-                  <td style={{ padding: '12px', color: '#ef4444', fontSize: '14px' }}>${totalPen.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</td>
+                  <td style={{ padding: '12px', color: '#38bdf8', fontSize: '14px' }}>${totalComisionSedes.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</td>
+                  <td style={{ padding: '12px', color: '#ef4444', fontSize: '14px' }}>${totalPenSedes.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</td>
                 </tr>
               </tbody>
             </table>
           </div>
         )}
 
-        {/* 3. VISTA: MÉTRICAS DE VENTA DE RUEDDA */}
+        {/* ---------------- 3. VENTANA: MÉTRICAS DE VENTA ---------------- */}
         {activeTab === 'metricas' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
-            <div style={{ background: cardBg, border: `1px solid ${borderColor}`, padding: '20px', borderRadius: '8px', borderLeft: '4px solid #D96B27' }}>
-              <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Total Unidades Registradas</p>
-              <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0 0 0', color: '#D96B27' }}>{flota.length}</h2>
+          <div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '25px' }}>
+              <div style={{ background: cardBg, border: `1px solid ${borderColor}`, padding: '20px', borderRadius: '8px', borderLeft: '4px solid #D96B27' }}>
+                <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Total Unidades Activas</p>
+                <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0 0 0', color: '#D96B27' }}>{flota.length}</h2>
+              </div>
+              <div style={{ background: cardBg, border: `1px solid ${borderColor}`, padding: '20px', borderRadius: '8px', borderLeft: '4px solid #10b981' }}>
+                <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Costo Total Concesionario</p>
+                <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0 0 0', color: '#10b981' }}>${totalCostoConcesionario.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</h2>
+              </div>
+              <div style={{ background: cardBg, border: `1px solid ${borderColor}`, padding: '20px', borderRadius: '8px', borderLeft: '4px solid #38bdf8' }}>
+                <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Pago Corte Sincronizado</p>
+                <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0 0 0', color: '#38bdf8' }}>${totalPagoCorte.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</h2>
+              </div>
             </div>
-            <div style={{ background: cardBg, border: `1px solid ${borderColor}`, padding: '20px', borderRadius: '8px', borderLeft: '4px solid #10b981' }}>
-              <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Monto Total Costo Concesionario</p>
-              <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0 0 0', color: '#10b981' }}>${totalFlotaVentas.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</h2>
-            </div>
-            <div style={{ background: cardBg, border: `1px solid ${borderColor}`, padding: '20px', borderRadius: '8px', borderLeft: '4px solid #38bdf8' }}>
-              <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Total Pago de Cortes Sincronizado</p>
-              <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0 0 0', color: '#38bdf8' }}>${totalPagoCorte.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</h2>
+
+            {/* Simulación del Bloque 'TAB' de Métricas */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+              <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '20px' }}>
+                <h4 style={{ margin: '0 0 12px 0', fontSize: '15px', color: '#D96B27' }}>Ventas por Concesionario</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {sedesCalculadas.map((s, idx) => (
+                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', padding: '6px 0', borderBottom: `1px solid ${borderColor}` }}>
+                      <span>{s.sede}</span>
+                      <strong style={{ color: '#D96B27' }}>{s.ventasCount} un.</strong>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '20px' }}>
+                <h4 style={{ margin: '0 0 12px 0', fontSize: '15px', color: '#D96B27' }}>Modelo de Moto Destacado</h4>
+                <div style={{ padding: '20px', background: isDark ? '#222' : '#f1f5f9', borderRadius: '6px', textAlign: 'center' }}>
+                  <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Líder en Ventas:</p>
+                  <h3 style={{ color: '#10b981', margin: '8px 0 0 0' }}>CG-HERO & F16-EXTREME</h3>
+                  <span style={{ fontSize: '11px', background: '#D96B27', color: '#fff', padding: '2px 6px', borderRadius: '4px', display: 'inline-block', marginTop: '8px' }}>Escuda (100% Stock)</span>
+                </div>
+              </div>
             </div>
           </div>
         )}
 
-        {/* 4. VISTA: REPORTE SEMANAL */}
+        {/* ---------------- 4. VENTANA: REPORTE SEMANAL ---------------- */}
         {activeTab === 'semanal' && (
-          <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '20px', maxWidth: '800px' }}>
-            <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#D96B27' }}>Resumen Ejecutivo Semanal R*</h3>
+          <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '20px', maxWidth: '850px' }}>
+            <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#D96B27' }}>RUEDDA* - Resumen Ejecutivo de Cánones y Cobranza</h3>
             <p style={{ fontSize: '13px', lineHeight: '1.6', opacity: 0.9 }}>
-              Consolidado general de operaciones para la semana en curso. El total procesado en pagos de corte asciende a <strong style={{ color: '#10b981' }}>${totalPagoCorte.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</strong> con un total de comisiones calculadas de <strong style={{ color: '#38bdf8' }}>${totalComision.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</strong> distribuidas entre las sedes activas de la red Ruedda.
+              Período de análisis activo para el control semanal de flotas. El rendimiento general se mantiene con un estándar de cobros eficiente y una sincronización en tiempo real con las sedes.
             </p>
-            <div style={{ marginTop: '20px', padding: '14px', background: isDark ? '#222' : '#f1f5f9', borderRadius: '6px', borderLeft: '3px solid #D96B27' }}>
-              <p style={{ margin: 0, fontSize: '12px', fontWeight: 'bold' }}>Estado del sistema: <span style={{ color: '#10b981' }}>Sincronizado y Operativo 🚗💨</span></p>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px', marginTop: '20px' }}>
+              <div style={{ background: isDark ? '#222' : '#f1f5f9', padding: '15px', borderRadius: '6px', borderLeft: '3px solid #10b981' }}>
+                <p style={{ margin: '0 0 4px 0', fontSize: '11px', opacity: 0.7 }}>Cánones Pagados a Tiempo</p>
+                <h3 style={{ margin: 0, color: '#10b981' }}>83.18%</h3>
+              </div>
+              <div style={{ background: isDark ? '#222' : '#f1f5f9', padding: '15px', borderRadius: '6px', borderLeft: '3px solid #38bdf8' }}>
+                <p style={{ margin: '0 0 4px 0', fontSize: '11px', opacity: 0.7 }}>Cánones Adelantados</p>
+                <h3 style={{ margin: 0, color: '#38bdf8' }}>5.60%</h3>
+              </div>
+              <div style={{ background: isDark ? '#222' : '#f1f5f9', padding: '15px', borderRadius: '6px', borderLeft: '3px solid #ef4444' }}>
+                <p style={{ margin: '0 0 4px 0', fontSize: '11px', opacity: 0.7 }}>Índice de Impago</p>
+                <h3 style={{ margin: 0, color: '#ef4444' }}>10.28%</h3>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '25px', padding: '14px', background: isDark ? '#1c1c38' : '#e0f2fe', borderRadius: '6px', borderLeft: '3px solid #0284c7' }}>
+              <p style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: isDark ? '#38bdf8' : '#0369a1' }}>
+                💡 Estado del Sistema: Cánones consolidados correctamente. Total liquidado en cortes: <strong style={{ color: '#10b981' }}>${totalPagoCorte.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</strong> 🚗💨
+              </p>
             </div>
           </div>
         )}
