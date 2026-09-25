@@ -298,39 +298,41 @@ export default function RueddaControlArrendamiento() {
 
       {/* CONTENIDO PRINCIPAL */}
       <div style={{ flex: 1, padding: '30px', overflowY: 'auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', borderBottom: `2px solid ${isDark ? '#333' : '#e2e8f0'}`, paddingBottom: '12px', flexWrap: 'wrap', gap: '15px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
-            <h1 style={{ fontSize: '20px', fontWeight: 'bold', margin: 0 }}>
-              {activeTab === 'ventas' && 'Control de Ventas y Registro Maestro de Flota'}
-              {activeTab === 'pagos' && 'Reporte de Pago y Liquidación por Sedes'}
-              {activeTab === 'metricas' && 'Métricas de Venta y Distribución Ruedda'}
-              {activeTab === 'semanal' && 'Reporte Semanal de Cánones y Cobranza'}
-            </h1>
-            
-            {/* SELECTOR DE SEMANA DE CORTE COMPACTO */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: cardBg, padding: '4px 10px', borderRadius: '6px', border: `1px solid ${borderColor}` }}>
-              <select 
-                value={semanaSeleccionadaId} 
-                onChange={(e) => setSemanaSeleccionadaId(Number(e.target.value))} 
-                style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px 6px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
-                {semanasCortas.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    Semana de corte: {s.id} ({s.fechaRango})
-                  </option>
-                ))}
-              </select>
-              <button 
-                onClick={agregarNuevaSemana}
-                title="Crear nueva semana de corte"
-                style={{ background: '#D96B27', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}>
-                + Nueva semana
-              </button>
-            </div>
-          </div>
+        
+        {/* ENCABEZADO SUPERIOR: TÍTULO Y BOTÓN NUEVA VENTA */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '15px' }}>
+          <h1 style={{ fontSize: '20px', fontWeight: 'bold', margin: 0 }}>
+            {activeTab === 'ventas' && 'Control de Ventas y Registro Maestro de Flota'}
+            {activeTab === 'pagos' && 'Reporte de Pago y Liquidación por Sedes'}
+            {activeTab === 'metricas' && 'Métricas de Venta y Distribución Ruedda'}
+            {activeTab === 'semanal' && 'Reporte Semanal de Cánones y Cobranza'}
+          </h1>
 
           <button onClick={() => setShowModal(true)} style={{ background: '#D96B27', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
             ➕ Registrar Nueva Venta 🏍️💨
           </button>
+        </div>
+
+        {/* SEGUNDA LÍNEA: SELECTOR DE SEMANA DE CORTE */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '25px', borderBottom: `2px solid ${isDark ? '#333' : '#e2e8f0'}`, paddingBottom: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: cardBg, padding: '4px 10px', borderRadius: '6px', border: `1px solid ${borderColor}` }}>
+            <select 
+              value={semanaSeleccionadaId} 
+              onChange={(e) => setSemanaSeleccionadaId(Number(e.target.value))} 
+              style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
+              {semanasCortas.map((s) => (
+                <option key={s.id} value={s.id}>
+                  Semana de corte: {s.id} ({s.fechaRango})
+                </option>
+              ))}
+            </select>
+            <button 
+              onClick={agregarNuevaSemana}
+              title="Crear nueva semana de corte"
+              style={{ background: '#D96B27', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}>
+              + Nueva semana
+            </button>
+          </div>
         </div>
 
         {/* MODAL NUEVA VENTA */}
