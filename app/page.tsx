@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 export default function RueddaControlArrendamiento() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [activeTab, setActiveTab] = useState<'ventas' | 'pagos' | 'metricas' | 'semanal'>('ventas');
+  const [menuRetraido, setMenuRetraido] = useState<boolean>(false);
   
   const [showModal, setShowModal] = useState<boolean>(false);
 
@@ -132,11 +133,15 @@ export default function RueddaControlArrendamiento() {
       cuotaActual = obtenerDiaSemanaEsp(datosParciales.fecha);
     }
 
-    const inicial = costo * 0.275;
-    const pagoConcesionario = Math.max(0, costo - inicial);
+    const inicialBruto = costo * 0.275;
+    const inicial = Math.round(inicialBruto * 100) / 100;
+
+    const pagoConcesionarioBruto = Math.max(0, costo - inicial);
+    const pagoConcesionario = Math.round(pagoConcesionarioBruto * 100) / 100;
     
-    // Canon Semanal según fórmula solicitada: ((Costo concesionario * (1 + 0.914096774)) - Inicial) / 24
-    const canon = costo > 0 ? ((costo * (1 + 0.914096774)) - inicial) / 24 : 0;
+    // Canon Semanal redondeado a 2 decimales
+    const canonBruto = costo > 0 ? ((costo * (1 + 0.914096774)) - inicial) / 24 : 0;
+    const canon = Math.round(canonBruto * 100) / 100;
 
     // Proyección de Interés redondeada estrictamente a 2 decimales
     const proyeccionBruta = (costo * 0.9141) + costo - inicial - pagoConcesionario;
@@ -291,33 +296,65 @@ export default function RueddaControlArrendamiento() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: bgMain, color: textMain, fontFamily: 'system-ui, sans-serif' }}>
       
-      {/* PANEL LATERAL */}
-      <div style={{ width: '270px', backgroundColor: sidebarBg, color: '#fff', padding: '20px', display: 'flex', flexDirection: 'column', borderRight: '1px solid #333', flexShrink: 0 }}>
-        <div style={{ marginBottom: '25px', borderBottom: '2px solid #D96B27', paddingBottom: '12px' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: '900', margin: 0, letterSpacing: '1px' }}>
-            RUEDDA <span style={{ color: '#D96B27' }}>*</span>
-          </h2>
-          <p style={{ fontSize: '11px', color: '#94a3b8', margin: '4px 0 0 0' }}>CONTROL DE ARRENDAMIENTO</p>
+      {/* PANEL LATERAL RETRÁCTIL */}
+      <div style={{ 
+        width: menuRetraido ? '70px' : '270px', 
+        backgroundColor: sidebarBg, 
+        color: '#fff', 
+        padding: menuRetraido ? '20px 10px' : '20px', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        borderRight: '1px solid #333', 
+        flexShrink: 0,
+        transition: 'width 0.25s ease'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', borderBottom: '2px solid #D96B27', paddingBottom: '12px' }}>
+          {!menuRetraido && (
+            <div>
+              <h2 style={{ fontSize: '18px', fontWeight: '900', margin: 0, letterSpacing: '1px' }}>
+                RUEDDA <span style={{ color: '#D96B27' }}>*</span>
+              </h2>
+              <p style={{ fontSize: '11px', color: '#94a3b8', margin: '4px 0 0 0' }}>CONTROL DE ARRENDAMIENTO</p>
+            </div>
+          )}
+          <button 
+            onClick={() => setMenuRetraido(!menuRetraido)} 
+            title={menuRetraido ? "Expandir Menú" : "Contraer Menú"}
+            style={{ background: '#334155', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '14px', margin: menuRetraido ? '0 auto' : 0 }}>
+            {menuRetraido ? '▶' : '◀'}
+          </button>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
-          <button onClick={() => setActiveTab('ventas')} style={{ textAlign: 'left', background: activeTab === 'ventas' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px' }}>
-            <span>📊</span> Control de Ventas
+          <button 
+            onClick={() => setActiveTab('ventas')} 
+            title="Control de Ventas"
+            style={{ textAlign: menuRetraido ? 'center' : 'left', background: activeTab === 'ventas' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: menuRetraido ? 'center' : 'flex-start', gap: '10px', fontSize: '13px' }}>
+            <span>📊</span> {!menuRetraido && 'Control de Ventas'}
           </button>
-          <button onClick={() => setActiveTab('pagos')} style={{ textAlign: 'left', background: activeTab === 'pagos' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px' }}>
-            <span>💳</span> Reporte de Pago
+          <button 
+            onClick={() => setActiveTab('pagos')} 
+            title="Reporte de Pago"
+            style={{ textAlign: menuRetraido ? 'center' : 'left', background: activeTab === 'pagos' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: menuRetraido ? 'center' : 'flex-start', gap: '10px', fontSize: '13px' }}>
+            <span>💳</span> {!menuRetraido && 'Reporte de Pago'}
           </button>
-          <button onClick={() => setActiveTab('metricas')} style={{ textAlign: 'left', background: activeTab === 'metricas' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px' }}>
-            <span>📈</span> Métricas de Venta
+          <button 
+            onClick={() => setActiveTab('metricas')} 
+            title="Métricas de Venta"
+            style={{ textAlign: menuRetraido ? 'center' : 'left', background: activeTab === 'metricas' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: menuRetraido ? 'center' : 'flex-start', gap: '10px', fontSize: '13px' }}>
+            <span>📈</span> {!menuRetraido && 'Métricas de Venta'}
           </button>
-          <button onClick={() => setActiveTab('semanal')} style={{ textAlign: 'left', background: activeTab === 'semanal' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px' }}>
-            <span>📅</span> Reporte Semanal
+          <button 
+            onClick={() => setActiveTab('semanal')} 
+            title="Reporte Semanal"
+            style={{ textAlign: menuRetraido ? 'center' : 'left', background: activeTab === 'semanal' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: menuRetraido ? 'center' : 'flex-start', gap: '10px', fontSize: '13px' }}>
+            <span>📅</span> {!menuRetraido && 'Reporte Semanal'}
           </button>
         </div>
 
         <div style={{ marginTop: 'auto', paddingTop: '20px', borderTop: '1px solid #334155' }}>
           <button onClick={() => setTheme(isDark ? 'light' : 'dark')} style={{ width: '100%', background: isDark ? '#334155' : '#475569', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px' }}>
-            {isDark ? '☀️ Modo Claro' : '🌙 Modo Oscuro'}
+            {menuRetraido ? (isDark ? '☀️' : '🌙') : (isDark ? '☀️ Modo Claro' : '🌙 Modo Oscuro')}
           </button>
         </div>
       </div>
@@ -334,7 +371,7 @@ export default function RueddaControlArrendamiento() {
           <button 
             onClick={() => setShowModal(true)} 
             style={{ background: '#D96B27', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
-            ➕ Registrar Nueva Venta 🚗💨
+            ➕ Registrar Nueva Venta 🏍️💨
           </button>
         </div>
 
@@ -600,7 +637,7 @@ export default function RueddaControlArrendamiento() {
                     Cancelar
                   </button>
                   <button type="submit" style={{ background: '#10b981', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
-                    Guardar e Integrar Venta 🚗💨
+                    Guardar e Integrar Venta 🏍️💨
                   </button>
                 </div>
               </form>
@@ -643,15 +680,15 @@ export default function RueddaControlArrendamiento() {
                     <td style={{ padding: '6px' }}><input type="text" value={item.plan} onChange={(e) => handleFlotaChange(index, 'plan', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '110px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="text" value={item.cliente} onChange={(e) => handleFlotaChange(index, 'cliente', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '150px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="text" value={item.telefono} onChange={(e) => handleFlotaChange(index, 'telefono', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '100px' }} /></td>
-                    <td style={{ padding: '6px' }}><input type="number" value={item.inicial} onChange={(e) => handleFlotaChange(index, 'inicial', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '80px' }} /></td>
+                    <td style={{ padding: '6px' }}><input type="number" value={Number(item.inicial || 0).toFixed(2)} onChange={(e) => handleFlotaChange(index, 'inicial', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '80px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="text" value={item.cuota} onChange={(e) => handleFlotaChange(index, 'cuota', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '75px' }} /></td>
-                    <td style={{ padding: '6px' }}><input type="number" value={item.canon} onChange={(e) => handleFlotaChange(index, 'canon', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '80px' }} /></td>
+                    <td style={{ padding: '6px' }}><input type="number" value={Number(item.canon || 0).toFixed(2)} onChange={(e) => handleFlotaChange(index, 'canon', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '80px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="text" value={item.marca} onChange={(e) => handleFlotaChange(index, 'marca', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="text" value={item.moto} onChange={(e) => handleFlotaChange(index, 'moto', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="text" value={item.imei} onChange={(e) => handleFlotaChange(index, 'imei', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '110px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="text" value={item.certificado} onChange={(e) => handleFlotaChange(index, 'certificado', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
                     <td style={{ padding: '6px' }}><input type="number" value={item.costoConcesionario} onChange={(e) => handleFlotaChange(index, 'costoConcesionario', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
-                    <td style={{ padding: '6px' }}><input type="number" value={item.pagoConcesionario} onChange={(e) => handleFlotaChange(index, 'pagoConcesionario', parseFloat(e.target.value))} style={{ background: inputBg, color: '#10b981', fontWeight: 'bold', border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
+                    <td style={{ padding: '6px' }}><input type="number" value={Number(item.pagoConcesionario || 0).toFixed(2)} onChange={(e) => handleFlotaChange(index, 'pagoConcesionario', parseFloat(e.target.value))} style={{ background: inputBg, color: '#10b981', fontWeight: 'bold', border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
                     <td style={{ padding: '6px', color: '#38bdf8', fontWeight: 'bold' }}>
                       ${(Number(item.proyeccionInteres) || 0).toFixed(2)}
                     </td>
@@ -687,10 +724,10 @@ export default function RueddaControlArrendamiento() {
                       </span>
                     </td>
                     <td style={{ padding: '10px', fontWeight: 'bold', color: '#10b981', fontSize: '14px' }}>
-                      ${item.pagoCorte.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
+                      ${item.pagoCorte.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                     <td style={{ padding: '10px', fontWeight: 'bold', color: '#38bdf8', fontSize: '14px' }}>
-                      ${item.comision.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
+                      ${item.comision.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                     <td style={{ padding: '10px' }}>
                       <input 
@@ -713,9 +750,9 @@ export default function RueddaControlArrendamiento() {
                 <tr style={{ background: isDark ? '#262626' : '#f1f5f9', borderTop: '2px solid #D96B27', fontWeight: 'bold' }}>
                   <td style={{ padding: '12px', color: '#D96B27' }}>TOTALES GENERALES:</td>
                   <td style={{ padding: '12px', textAlign: 'center', color: '#D96B27' }}>{flota.length}</td>
-                  <td style={{ padding: '12px', color: '#10b981', fontSize: '14px' }}>${totalPagoCorte.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</td>
-                  <td style={{ padding: '12px', color: '#38bdf8', fontSize: '14px' }}>${totalComisionSedes.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</td>
-                  <td style={{ padding: '12px', color: '#ef4444', fontSize: '14px' }}>${totalPenSedes.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</td>
+                  <td style={{ padding: '12px', color: '#10b981', fontSize: '14px' }}>${totalPagoCorte.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                  <td style={{ padding: '12px', color: '#38bdf8', fontSize: '14px' }}>${totalComisionSedes.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                  <td style={{ padding: '12px', color: '#ef4444', fontSize: '14px' }}>${totalPenSedes.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 </tr>
               </tbody>
             </table>
@@ -732,11 +769,11 @@ export default function RueddaControlArrendamiento() {
               </div>
               <div style={{ background: cardBg, border: `1px solid ${borderColor}`, padding: '20px', borderRadius: '8px', borderLeft: '4px solid #10b981' }}>
                 <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Costo Total Concesionario</p>
-                <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0 0 0', color: '#10b981' }}>${totalCostoConcesionario.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</h2>
+                <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0 0 0', color: '#10b981' }}>${totalCostoConcesionario.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
               </div>
               <div style={{ background: cardBg, border: `1px solid ${borderColor}`, padding: '20px', borderRadius: '8px', borderLeft: '4px solid #38bdf8' }}>
                 <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Proyección Total Interés</p>
-                <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0 0 0', color: '#38bdf8' }}>${totalProyeccionInteres.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</h2>
+                <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0 0 0', color: '#38bdf8' }}>${totalProyeccionInteres.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
               </div>
             </div>
           </div>
@@ -751,7 +788,7 @@ export default function RueddaControlArrendamiento() {
             </p>
             <div style={{ marginTop: '20px', padding: '14px', background: isDark ? '#1c1c38' : '#e0f2fe', borderRadius: '6px', borderLeft: '3px solid #0284c7' }}>
               <p style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: isDark ? '#38bdf8' : '#0369a1' }}>
-                💡 Proyección de Interés Acumulada de la Flota: <strong style={{ color: '#38bdf8' }}>${totalProyeccionInteres.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</strong> 🚗💨
+                💡 Proyección de Interés Acumulada de la Flota: <strong style={{ color: '#38bdf8' }}>${totalProyeccionInteres.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong> 🏍️💨
               </p>
             </div>
           </div>
