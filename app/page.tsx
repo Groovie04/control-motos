@@ -5,22 +5,10 @@ export default function RueddaControlArrendamiento() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [activeTab, setActiveTab] = useState<'ventas' | 'pagos' | 'metricas' | 'semanal'>('ventas');
   const [menuRetraido, setMenuRetraido] = useState<boolean>(false);
+  
   const [showModal, setShowModal] = useState<boolean>(false);
 
-  // Filtro de Semanas de Corte
-  const [semanaSeleccionada, setSemanaSeleccionada] = useState<string>('todas');
-
-  const listaSemanasCorte = [
-    { id: 'corte-1', inicio: '10/08/2026', fin: '13/08/2026', label: 'Corte 1: 10/08/2026 - 13/08/2026' },
-    { id: 'corte-2', inicio: '17/08/2026', fin: '20/08/2026', label: 'Corte 2: 17/08/2026 - 20/08/2026' },
-    { id: 'corte-3', inicio: '24/08/2026', fin: '27/08/2026', label: 'Corte 3: 24/08/2026 - 27/08/2026' },
-    { id: 'corte-4', inicio: '31/08/2026', fin: '03/09/2026', label: 'Corte 4: 31/08/2026 - 03/09/2026' },
-    { id: 'corte-5', inicio: '07/09/2026', fin: '10/09/2026', label: 'Corte 5: 07/09/2026 - 10/09/2026' },
-    { id: 'corte-6', inicio: '14/09/2026', fin: '17/09/2026', label: 'Corte 6: 14/09/2026 - 17/09/2026' },
-    { id: 'corte-7', inicio: '21/09/2026', fin: '24/09/2026', label: 'Corte 7: 21/09/2026 - 24/09/2026' }
-  ];
-
-  const [listaConcesionarios] = useState([
+  const [listaConcesionarios, setListaConcesionarios] = useState([
     'Motores Del Este VIP C.A.',
     'Urdaneta Motors 2025 C.A.',
     'Turbo Motos C.A',
@@ -31,11 +19,55 @@ export default function RueddaControlArrendamiento() {
     'SUPER MOTOS TROPICAL C.A'
   ]);
 
-  const [listaPlanes] = useState(['6 Meses - Semanal', '3 Meses - Semanal', '1 Año - Semanal', 'Contado']);
+  const [listaMotos, setListaMotos] = useState([
+    'F16-EXTREME',
+    'CG-HERO',
+    'EXPRESS-150',
+    'WORKER-200'
+  ]);
+
+  const [listaMarcas, setListaMarcas] = useState([
+    'Escuda',
+    'Keeway',
+    'Empire',
+    'Bera'
+  ]);
+
+  const [listaPlanes, setListaPlanes] = useState([
+    '6 Meses - Semanal',
+    '3 Meses - Semanal',
+    '1 Año - Semanal',
+    'Contado'
+  ]);
+
+  const [listaDias] = useState([
+    'Lunes',
+    'Martes',
+    'Miércoles',
+    'Jueves',
+    'Viernes',
+    'Sábado',
+    'Domingo'
+  ]);
+
+  const [modoNuevoConcesionario, setModoNuevoConcesionario] = useState(false);
+  const [nuevoConcesionarioInput, setNuevoConcesionarioInput] = useState('');
+
+  const [modoNuevoPlan, setModoNuevoPlan] = useState(false);
+  const [nuevoPlanInput, setNuevoPlanInput] = useState('');
+
+  const [modoNuevaMarca, setModoNuevaMarca] = useState(false);
+  const [nuevaMarcaInput, setNuevaMarcaInput] = useState('');
+
+  const [modoNuevaMoto, setModoNuevaMoto] = useState(false);
+  const [nuevaMotoInput, setNuevaMotoInput] = useState('');
 
   const obtenerFechaInput = () => {
     const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const anio = d.getFullYear();
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const dia = String(d.getDate()).padStart(2, '0');
+    return `${anio}-${mes}-${dia}`;
   };
 
   const obtenerDiaSemanaEsp = (fechaIso: string) => {
@@ -52,7 +84,10 @@ export default function RueddaControlArrendamiento() {
   const formatearFechaDisplay = (fechaIso: string) => {
     if (!fechaIso) return '';
     const partes = fechaIso.split('-');
-    return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fechaIso;
+    if (partes.length === 3) {
+      return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+    return fechaIso;
   };
 
   const [nuevaVenta, setNuevaVenta] = useState({
@@ -70,17 +105,16 @@ export default function RueddaControlArrendamiento() {
     certificado: '',
     costoConcesionario: 0,
     pagoConcesionario: 0,
-    proyeccionInteres: 0,
-    fechaCorte: '13/08/2026'
+    proyeccionInteres: 0
   });
 
   const [flota, setFlota] = useState([
     { fecha: '10/08/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Alberto Rafael Salas Martinez', telefono: '584167171297', inicial: 440.00, cuota: 'Lunes', canon: 109.27, marca: 'Escuda', moto: 'F16-EXTREME', fechaCorte: '13/08/2026', imei: '863874086467440', certificado: 'AA-1278490', costoConcesionario: 1600.00, pagoConcesionario: 1160.00, proyeccionInteres: 1462.56 },
-    { fecha: '11/08/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Freddy David Perez Peña', telefono: '584126034365', inicial: 277.75, cuota: 'Martes', canon: 68.98, marca: 'Escuda', moto: 'CG-HERO', fechaCorte: '13/08/2026', imei: '863874086280066', certificado: 'AA-1329061', costoConcesionario: 1010.00, pagoConcesionario: 732.25, proyeccionInteres: 923.15 },
-    { fecha: '24/08/2026', concesionario: 'INVERSIONES CHT30, C.A', plan: '6 Meses - Semanal', cliente: 'Marcos Sleyder Bozo Perez', telefono: '584243571388', inicial: 506.00, cuota: 'Viernes', canon: 125.66, marca: 'Escuda', moto: 'F16-EXTREME', fechaCorte: '27/08/2026', imei: '-', certificado: '-', costoConcesionario: 1840.00, pagoConcesionario: 1334.00, proyeccionInteres: 1681.94 }
+    { fecha: '11/08/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Freddy David Perez Peña', telefono: '584126034365', inicial: 277.75, cuota: 'Martes', canon: 68.98, marca: 'Escuda', moto: 'CG-HERO', fechaCorte: '', imei: '863874086280066', certificado: 'AA-1329061', costoConcesionario: 1010.00, pagoConcesionario: 732.25, proyeccionInteres: 923.15 },
+    { fecha: '11/08/2026', concesionario: 'INVERSIONES CHT30, C.A', plan: '6 Meses - Semanal', cliente: 'Marcos Sleyder Bozo Perez', telefono: '584243571388', inicial: 506.00, cuota: 'Viernes', canon: 125.66, marca: 'Escuda', moto: 'F16-EXTREME', fechaCorte: '', imei: '-', certificado: '-', costoConcesionario: 1840.00, pagoConcesionario: 1334.00, proyeccionInteres: 1681.94 }
   ]);
 
-  const [sedesConfig] = useState([
+  const [sedesConfig, setSedesConfig] = useState([
     { sede: 'Motores Del Este VIP C.A.', pen: 0.00 },
     { sede: 'Urdaneta Motors 2025 C.A.', pen: 0.00 },
     { sede: 'Turbo Motos C.A', pen: 0.00 },
@@ -93,15 +127,23 @@ export default function RueddaControlArrendamiento() {
 
   const actualizarCalculosFinancieros = (datosParciales: any) => {
     let costo = Number(datosParciales.costoConcesionario ?? nuevaVenta.costoConcesionario) || 0;
+    
     let cuotaActual = datosParciales.cuota ?? nuevaVenta.cuota;
     if (datosParciales.fecha) {
       cuotaActual = obtenerDiaSemanaEsp(datosParciales.fecha);
     }
 
-    const inicial = Math.round((costo * 0.275) * 100) / 100;
-    const pagoConcesionario = Math.round(Math.max(0, costo - inicial) * 100) / 100;
-    const canon = Math.round((costo > 0 ? ((costo * (1 + 0.914096774)) - inicial) / 24 : 0) * 100) / 100;
-    const proyeccionInteres = Math.round(((costo * 0.9141) + costo - inicial - pagoConcesionario) * 100) / 100;
+    const inicialBruto = costo * 0.275;
+    const inicial = Math.round(inicialBruto * 100) / 100;
+
+    const pagoConcesionarioBruto = Math.max(0, costo - inicial);
+    const pagoConcesionario = Math.round(pagoConcesionarioBruto * 100) / 100;
+    
+    const canonBruto = costo > 0 ? ((costo * (1 + 0.914096774)) - inicial) / 24 : 0;
+    const canon = Math.round(canonBruto * 100) / 100;
+
+    const proyeccionBruta = (costo * 0.9141) + costo - inicial - pagoConcesionario;
+    const proyeccionInteres = Math.round(proyeccionBruta * 100) / 100;
 
     setNuevaVenta({
       ...nuevaVenta,
@@ -116,8 +158,14 @@ export default function RueddaControlArrendamiento() {
 
   const handleFlotaChange = (index: number, field: string, value: any) => {
     const nuevaFlota = [...flota];
-    (nuevaFlota[index] as any)[field] = value;
+    nuevaFlota[index] = { ...nuevaFlota[index], [field]: value };
     setFlota(nuevaFlota);
+  };
+
+  const handleSedeChange = (index: number, field: string, value: string) => {
+    const nuevas = [...sedesConfig];
+    nuevas[index] = { ...nuevas[index], [field]: parseFloat(value) || 0 };
+    setSedesConfig(nuevas);
   };
 
   const handleAgregarVentaSubmit = (e: React.FormEvent) => {
@@ -127,20 +175,52 @@ export default function RueddaControlArrendamiento() {
       return;
     }
 
+    let concesionarioFinal = nuevaVenta.concesionario;
+    if (modoNuevoConcesionario && nuevoConcesionarioInput.trim()) {
+      concesionarioFinal = nuevoConcesionarioInput.trim();
+      if (!listaConcesionarios.includes(concesionarioFinal)) {
+        setListaConcesionarios([...listaConcesionarios, concesionarioFinal]);
+      }
+    }
+
+    let planFinal = nuevaVenta.plan;
+    if (modoNuevoPlan && nuevoPlanInput.trim()) {
+      planFinal = nuevoPlanInput.trim();
+      if (!listaPlanes.includes(planFinal)) {
+        setListaPlanes([...listaPlanes, planFinal]);
+      }
+    }
+
+    let marcaFinal = nuevaVenta.marca;
+    if (modoNuevaMarca && nuevaMarcaInput.trim()) {
+      marcaFinal = nuevaMarcaInput.trim();
+      if (!listaMarcas.includes(marcaFinal)) {
+        setListaMarcas([...listaMarcas, marcaFinal]);
+      }
+    }
+
+    let motoFinal = nuevaVenta.moto;
+    if (modoNuevaMoto && nuevaMotoInput.trim()) {
+      motoFinal = nuevaMotoInput.trim();
+      if (!listaMotos.includes(motoFinal)) {
+        setListaMotos([...listaMotos, motoFinal]);
+      }
+    }
+
     const itemAAgregar = {
       fecha: formatearFechaDisplay(nuevaVenta.fecha) || '25/09/2026',
-      concesionario: nuevaVenta.concesionario,
-      plan: nuevaVenta.plan,
+      concesionario: concesionarioFinal,
+      plan: planFinal,
       cliente: nuevaVenta.cliente,
       telefono: nuevaVenta.telefono,
       inicial: Number(nuevaVenta.inicial) || 0,
       cuota: nuevaVenta.cuota,
       canon: Number(nuevaVenta.canon) || 0,
-      marca: nuevaVenta.marca,
-      moto: nuevaVenta.moto,
-      fechaCorte: nuevaVenta.fechaCorte,
-      imei: nuevaVenta.imei.trim() || '-',
-      certificado: nuevaVenta.certificado.trim() || '-',
+      marca: marcaFinal,
+      moto: motoFinal,
+      fechaCorte: '',
+      imei: nuevaVenta.imei.trim() ? nuevaVenta.imei.trim() : '-',
+      certificado: nuevaVenta.certificado.trim() ? nuevaVenta.certificado.trim() : '-',
       costoConcesionario: Number(nuevaVenta.costoConcesionario) || 0,
       pagoConcesionario: Number(nuevaVenta.pagoConcesionario) || 0,
       proyeccionInteres: Number(nuevaVenta.proyeccionInteres) || 0
@@ -148,36 +228,58 @@ export default function RueddaControlArrendamiento() {
 
     setFlota([itemAAgregar, ...flota]);
     setShowModal(false);
+    setModoNuevoConcesionario(false);
+    setModoNuevoPlan(false);
+    setModoNuevaMarca(false);
+    setModoNuevaMoto(false);
+    
+    const fechaHoy = obtenerFechaInput();
+    setNuevaVenta({
+      fecha: fechaHoy,
+      concesionario: listaConcesionarios[0],
+      plan: listaPlanes[0],
+      cliente: '',
+      telefono: '',
+      inicial: 0,
+      cuota: obtenerDiaSemanaEsp(fechaHoy),
+      canon: 0,
+      marca: listaMarcas[0],
+      moto: listaMotos[0],
+      imei: '',
+      certificado: '',
+      costoConcesionario: 0,
+      pagoConcesionario: 0,
+      proyeccionInteres: 0
+    });
   };
-
-  const flotaFiltrada = useMemo(() => {
-    if (semanaSeleccionada === 'todas') return flota;
-    const corteEncontrado = listaSemanasCorte.find(c => c.id === semanaSeleccionada);
-    if (!corteEncontrado) return flota;
-    return flota.filter(item => item.fechaCorte === corteEncontrado.fin);
-  }, [flota, semanaSeleccionada]);
-
-  const totalPagoFiltradoSemana = useMemo(() => {
-    return flotaFiltrada.reduce((acc, curr) => acc + (Number(curr.pagoConcesionario) || 0), 0);
-  }, [flotaFiltrada]);
 
   const sedesCalculadas = useMemo(() => {
     const sedesUnicas = Array.from(new Set([...sedesConfig.map(s => s.sede), ...flota.map(f => f.concesionario)]));
+
     return sedesUnicas.map((sedeNombre) => {
       const configExistente = sedesConfig.find(s => s.sede.trim().toLowerCase() === sedeNombre.trim().toLowerCase());
-      const itemsSede = flotaFiltrada.filter((item) => item.concesionario.trim().toLowerCase() === sedeNombre.trim().toLowerCase());
+      const penVal = configExistente ? configExistente.pen : 0;
+
+      const itemsSede = flota.filter((item) => item.concesionario.trim().toLowerCase() === sedeNombre.trim().toLowerCase());
+      const totalPagoCorte = itemsSede.reduce((sum, item) => sum + (Number(item.pagoConcesionario) || 0), 0);
+      const totalComision = itemsSede.reduce((sum, item) => sum + ((Number(item.costoConcesionario) || 0) * 0.01), 0);
+
       return {
         sede: sedeNombre,
-        pen: configExistente ? configExistente.pen : 0,
-        pagoCorte: itemsSede.reduce((sum, item) => sum + (Number(item.pagoConcesionario) || 0), 0),
-        comision: itemsSede.reduce((sum, item) => sum + ((Number(item.costoConcesionario) || 0) * 0.01), 0),
+        pen: penVal,
+        pagoCorte: totalPagoCorte,
+        comision: totalComision,
         ventasCount: itemsSede.length
       };
     });
-  }, [flotaFiltrada, sedesConfig]);
+  }, [flota, sedesConfig]);
 
-  const totalCostoConcesionario = flotaFiltrada.reduce((acc, curr) => acc + (Number(curr.costoConcesionario) || 0), 0);
-  const totalProyeccionInteres = flotaFiltrada.reduce((acc, curr) => acc + (Number(curr.proyeccionInteres) || 0), 0);
+  const totalCostoConcesionario = flota.reduce((acc, curr) => acc + (Number(curr.costoConcesionario) || 0), 0);
+  const totalPagoConcesionario = flota.reduce((acc, curr) => acc + (Number(curr.pagoConcesionario) || 0), 0);
+  const totalProyeccionInteres = flota.reduce((acc, curr) => acc + (Number(curr.proyeccionInteres) || 0), 0);
+  const totalPagoCorte = sedesCalculadas.reduce((acc, curr) => acc + curr.pagoCorte, 0);
+  const totalComisionSedes = sedesCalculadas.reduce((acc, curr) => acc + curr.comision, 0);
+  const totalPenSedes = sedesCalculadas.reduce((acc, curr) => acc + curr.pen, 0);
 
   const isDark = theme === 'dark';
   const bgMain = isDark ? '#121212' : '#f8fafc';
@@ -190,149 +292,380 @@ export default function RueddaControlArrendamiento() {
   const sidebarBg = isDark ? '#181b2a' : '#1e293b';
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: bgMain, color: textMain, fontFamily: 'system-ui, sans-serif' }}>
-      
-      {/* PANEL LATERAL */}
-      <div style={{ width: menuRetraido ? '70px' : '270px', backgroundColor: sidebarBg, color: '#fff', padding: menuRetraido ? '20px 10px' : '20px', display: 'flex', flexDirection: 'column', borderRight: '1px solid #333', flexShrink: 0, transition: 'width 0.25s ease' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', borderBottom: '2px solid #D96B27', paddingBottom: '12px' }}>
-          {!menuRetraido && (
-            <div>
-              <h2 style={{ fontSize: '18px', fontWeight: '900', margin: 0, letterSpacing: '1px' }}>RUEDDA <span style={{ color: '#D96B27' }}>*</span></h2>
-              <p style={{ fontSize: '11px', color: '#94a3b8', margin: '4px 0 0 0' }}>CONTROL DE ARRENDAMIENTO</p>
-            </div>
-          )}
-          <button onClick={() => setMenuRetraido(!menuRetraido)} style={{ background: '#334155', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '14px', margin: menuRetraido ? '0 auto' : 0 }}>
-            {menuRetraido ? '▶' : '◀'}
-          </button>
-        </div>
+    <>
+      {/* METADATOS Y FAVICON PARA LA PESTAÑA */}
+      <head>
+        <title>Ruedda / Control de Arrendamiento</title>
+        <meta name="description" content="Sistema de control y gestión de arrendamiento de flotas Ruedda" />
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏍️</text></svg>" />
+      </head>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
-          <button onClick={() => setActiveTab('ventas')} style={{ textAlign: menuRetraido ? 'center' : 'left', background: activeTab === 'ventas' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px' }}>
-            <span>📊</span> {!menuRetraido && 'Control de Ventas'}
-          </button>
-          <button onClick={() => setActiveTab('pagos')} style={{ textAlign: menuRetraido ? 'center' : 'left', background: activeTab === 'pagos' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px' }}>
-            <span>💳</span> {!menuRetraido && 'Reporte de Pago'}
-          </button>
-          <button onClick={() => setActiveTab('metricas')} style={{ textAlign: menuRetraido ? 'center' : 'left', background: activeTab === 'metricas' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px' }}>
-            <span>📈</span> {!menuRetraido && 'Métricas de Venta'}
-          </button>
-          <button onClick={() => setActiveTab('semanal')} style={{ textAlign: menuRetraido ? 'center' : 'left', background: activeTab === 'semanal' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px' }}>
-            <span>📅</span> {!menuRetraido && 'Reporte Semanal'}
-          </button>
-        </div>
-
-        <div style={{ marginTop: 'auto', paddingTop: '20px', borderTop: '1px solid #334155' }}>
-          <button onClick={() => setTheme(isDark ? 'light' : 'dark')} style={{ width: '100%', background: isDark ? '#334155' : '#475569', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px' }}>
-            {menuRetraido ? (isDark ? '☀️' : '🌙') : (isDark ? '☀️ Modo Claro' : '🌙 Modo Oscuro')}
-          </button>
-        </div>
-      </div>
-
-      {/* CONTENIDO PRINCIPAL */}
-      <div style={{ flex: 1, padding: '30px', overflowY: 'auto' }}>
+      <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: bgMain, color: textMain, fontFamily: 'system-ui, sans-serif' }}>
         
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', borderBottom: `2px solid ${isDark ? '#333' : '#e2e8f0'}`, paddingBottom: '12px', flexWrap: 'wrap', gap: '15px' }}>
-          <h1 style={{ fontSize: '19px', fontWeight: 'bold', margin: 0 }}>
-            {activeTab === 'ventas' && 'Control de Ventas y Registro Maestro de Flota'}
-            {activeTab === 'pagos' && 'Reporte de Pago y Liquidación por Sedes'}
-            {activeTab === 'metricas' && 'Métricas de Venta y Distribución Ruedda'}
-            {activeTab === 'semanal' && 'Reporte Semanal de Cánones y Cobranza'}
-          </h1>
+        {/* PANEL LATERAL RETRÁCTIL */}
+        <div style={{ 
+          width: menuRetraido ? '70px' : '270px', 
+          backgroundColor: sidebarBg, 
+          color: '#fff', 
+          padding: menuRetraido ? '20px 10px' : '20px', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          borderRight: '1px solid #333', 
+          flexShrink: 0,
+          transition: 'width 0.25s ease'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', borderBottom: '2px solid #D96B27', paddingBottom: '12px' }}>
+            {!menuRetraido && (
+              <div>
+                <h2 style={{ fontSize: '18px', fontWeight: '900', margin: 0, letterSpacing: '1px' }}>
+                  RUEDDA <span style={{ color: '#D96B27' }}>*</span>
+                </h2>
+                <p style={{ fontSize: '11px', color: '#94a3b8', margin: '4px 0 0 0' }}>CONTROL DE ARRENDAMIENTO</p>
+              </div>
+            )}
+            <button 
+              onClick={() => setMenuRetraido(!menuRetraido)} 
+              title={menuRetraido ? "Expandir Menú" : "Contraer Menú"}
+              style={{ background: '#334155', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '14px', margin: menuRetraido ? '0 auto' : 0 }}>
+              {menuRetraido ? (
+  <span style={{ fontWeight: 900, fontSize: '16px', color: '#D96B27' }}>R*</span>
+) : (
+  <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+    <span style={{ fontWeight: 900, fontSize: '16px', color: '#D96B27' }}>R</span>
+    <span style={{ fontWeight: 700, fontSize: '12px', color: '#fff' }}>*</span>
+    <span style={{ fontSize: '12px', marginLeft: '4px' }}>◀</span>
+  </div>
+  
+)}
+            </button>
+          </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: cardBg, border: `1px solid ${borderColor}`, padding: '6px 12px', borderRadius: '6px' }}>
-              <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#D96B27' }}>📅 Ciclo Semanal:</span>
-              <select 
-                value={semanaSeleccionada} 
-                onChange={e => setSemanaSeleccionada(e.target.value)}
-                style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '6px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
-                <option value="todas">🔄 Ver Todas las Semanas</option>
-                {listaSemanasCorte.map(corte => (
-                  <option key={corte.id} value={corte.id}>{corte.label}</option>
-                ))}
-              </select>
-            </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
+            <button 
+              onClick={() => setActiveTab('ventas')} 
+              title="Control de Ventas"
+              style={{ textAlign: menuRetraido ? 'center' : 'left', background: activeTab === 'ventas' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: menuRetraido ? 'center' : 'flex-start', gap: '10px', fontSize: '13px' }}>
+              <span>📊</span> {!menuRetraido && 'Control de Ventas'}
+            </button>
+            <button 
+              onClick={() => setActiveTab('pagos')} 
+              title="Reporte de Pago"
+              style={{ textAlign: menuRetraido ? 'center' : 'left', background: activeTab === 'pagos' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: menuRetraido ? 'center' : 'flex-start', gap: '10px', fontSize: '13px' }}>
+              <span>💳</span> {!menuRetraido && 'Reporte de Pago'}
+            </button>
+            <button 
+              onClick={() => setActiveTab('metricas')} 
+              title="Métricas de Venta"
+              style={{ textAlign: menuRetraido ? 'center' : 'left', background: activeTab === 'metricas' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: menuRetraido ? 'center' : 'flex-start', gap: '10px', fontSize: '13px' }}>
+              <span>📈</span> {!menuRetraido && 'Métricas de Venta'}
+            </button>
+            <button 
+              onClick={() => setActiveTab('semanal')} 
+              title="Reporte Semanal"
+              style={{ textAlign: menuRetraido ? 'center' : 'left', background: activeTab === 'semanal' ? '#D96B27' : 'transparent', color: '#fff', border: 'none', padding: '12px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: menuRetraido ? 'center' : 'flex-start', gap: '10px', fontSize: '13px' }}>
+              <span>📅</span> {!menuRetraido && 'Reporte Semanal'}
+            </button>
+          </div>
 
-            <button onClick={() => setShowModal(true)} style={{ background: '#D96B27', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
-              ➕ Registrar Nueva Venta 🏍️💨
+          <div style={{ marginTop: 'auto', paddingTop: '20px', borderTop: '1px solid #334155' }}>
+            <button onClick={() => setTheme(isDark ? 'light' : 'dark')} style={{ width: '100%', background: isDark ? '#334155' : '#475569', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px' }}>
+              {menuRetraido ? (isDark ? '☀️' : '🌙') : (isDark ? '☀️ Modo Claro' : '🌙 Modo Oscuro')}
             </button>
           </div>
         </div>
 
-        {/* MODAL */}
-        {showModal && (
-          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-            <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '10px', padding: '25px', width: '680px', maxWidth: '92%', maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', borderBottom: `1px solid ${borderColor}`, paddingBottom: '10px' }}>
-                <h3 style={{ margin: 0, color: '#D96B27', fontSize: '17px' }}>Registrar Nueva Venta de Flota 💚</h3>
-                <button onClick={() => setShowModal(false)} style={{ background: 'transparent', border: 'none', color: textMain, fontSize: '18px', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
-              </div>
-
-              <form onSubmit={handleAgregarVentaSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Fecha (Calendario)</label>
-                  <input type="date" value={nuevaVenta.fecha} onChange={e => actualizarCalculosFinancieros({ fecha: e.target.value })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} required />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Ciclo / Fecha Corte Fin</label>
-                  <select value={nuevaVenta.fechaCorte} onChange={e => setNuevaVenta({...nuevaVenta, fechaCorte: e.target.value})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }}>
-                    {listaSemanasCorte.map(c => (
-                      <option key={c.id} value={c.fin}>{c.label}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Concesionario</label>
-                  <select value={nuevaVenta.concesionario} onChange={e => actualizarCalculosFinancieros({ concesionario: e.target.value })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }}>
-                    {listaConcesionarios.map((c, i) => (<option key={i} value={c}>{c}</option>))}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Plan</label>
-                  <select value={nuevaVenta.plan} onChange={e => actualizarCalculosFinancieros({ plan: e.target.value })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }}>
-                    {listaPlanes.map((p, i) => (<option key={i} value={p}>{p}</option>))}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Nombre del cliente</label>
-                  <input type="text" placeholder="Nombre completo" value={nuevaVenta.cliente} onChange={e => actualizarCalculosFinancieros({ cliente: e.target.value })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} required />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Número del cliente</label>
-                  <input type="text" placeholder="Ej: 584126000000" value={nuevaVenta.telefono} onChange={e => actualizarCalculosFinancieros({ telefono: e.target.value })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Costo concesionario ($)</label>
-                  <input type="number" step="0.01" value={nuevaVenta.costoConcesionario || ''} onChange={e => actualizarCalculosFinancieros({ costoConcesionario: parseFloat(e.target.value) || 0 })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8, color: '#38bdf8', fontWeight: 'bold' }}>Inicial ($)</label>
-                  <input type="number" step="0.01" value={nuevaVenta.inicial || 0} readOnly style={{ width: '100%', background: isDark ? '#162235' : '#e0f2fe', color: '#38bdf8', border: `1px solid #38bdf8`, padding: '8px', borderRadius: '4px', fontWeight: 'bold' }} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8, color: '#10b981', fontWeight: 'bold' }}>Pago a concesionario ($)</label>
-                  <input type="number" step="0.01" value={nuevaVenta.pagoConcesionario || 0} readOnly style={{ width: '100%', background: isDark ? '#11221c' : '#d1fae5', color: '#10b981', border: `1px solid #10b981`, padding: '8px', borderRadius: '4px', fontWeight: 'bold' }} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8, color: '#38bdf8', fontWeight: 'bold' }}>Proyección del interés ($)</label>
-                  <input type="number" step="0.01" value={nuevaVenta.proyeccionInteres || 0} readOnly style={{ width: '100%', background: isDark ? '#162235' : '#e0f2fe', color: '#38bdf8', border: `1px solid #38bdf8`, padding: '8px', borderRadius: '4px', fontWeight: 'bold' }} />
-                </div>
-                <div style={{ gridColumn: 'span 2', display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '15px' }}>
-                  <button type="button" onClick={() => setShowModal(false)} style={{ background: '#475569', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>Cancelar</button>
-                  <button type="submit" style={{ background: '#10b981', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>Guardar e Integrar Venta 🏍️💨</button>
-                </div>
-              </form>
-            </div>
+        {/* CONTENIDO PRINCIPAL */}
+        <div style={{ flex: 1, padding: '30px', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', borderBottom: `2px solid ${isDark ? '#333' : '#e2e8f0'}`, paddingBottom: '12px' }}>
+            <h1 style={{ fontSize: '20px', fontWeight: 'bold', margin: 0 }}>
+              {activeTab === 'ventas' && 'Control de Ventas y Registro Maestro de Flota'}
+              {activeTab === 'pagos' && 'Reporte de Pago y Liquidación por Sedes'}
+              {activeTab === 'metricas' && 'Métricas de Venta y Distribución Ruedda'}
+              {activeTab === 'semanal' && 'Reporte Semanal de Cánones y Cobranza'}
+            </h1>
+            <button 
+              onClick={() => setShowModal(true)} 
+              style={{ background: '#D96B27', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
+              ➕ Registrar Nueva Venta 🏍️💨
+            </button>
           </div>
-        )}
 
-        {/* 1. VENTANA: CONTROL DE VENTAS */}
-        {activeTab === 'ventas' && (
-          <div>
+          {/* MODAL */}
+          {showModal && (
+            <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+              <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '10px', padding: '25px', width: '680px', maxWidth: '92%', maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', borderBottom: `1px solid ${borderColor}`, paddingBottom: '10px' }}>
+                  <h3 style={{ margin: 0, color: '#D96B27', fontSize: '17px' }}>Registrar Nueva Venta de Flota 💚</h3>
+                  <button onClick={() => setShowModal(false)} style={{ background: 'transparent', border: 'none', color: textMain, fontSize: '18px', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
+                </div>
+
+                <form onSubmit={handleAgregarVentaSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
+                  
+                  {/* 1. FECHA */}
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Fecha (Calendario)</label>
+                    <input 
+                      type="date" 
+                      value={nuevaVenta.fecha} 
+                      onChange={e => actualizarCalculosFinancieros({ fecha: e.target.value })} 
+                      style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px', colorScheme: isDark ? 'dark' : 'light' }} 
+                      required 
+                    />
+                  </div>
+
+                  {/* 2. CONCESIONARIO */}
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Concesionario</label>
+                    {!modoNuevoConcesionario ? (
+                      <select 
+                        value={nuevaVenta.concesionario} 
+                        onChange={e => {
+                          if (e.target.value === '___NUEVO___') {
+                            setModoNuevoConcesionario(true);
+                          } else {
+                            actualizarCalculosFinancieros({ concesionario: e.target.value });
+                          }
+                        }} 
+                        style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }}>
+                        {listaConcesionarios.map((c, i) => (
+                          <option key={i} value={c}>{c}</option>
+                        ))}
+                        <option value="___NUEVO___" style={{ color: '#D96B27', fontWeight: 'bold' }}>+ Agregar nuevo concesionario...</option>
+                      </select>
+                    ) : (
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <input 
+                          type="text" 
+                          placeholder="Nombre del nuevo concesionario" 
+                          value={nuevoConcesionarioInput} 
+                          onChange={e => setNuevoConcesionarioInput(e.target.value)} 
+                          style={{ flex: 1, background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} 
+                          autoFocus
+                        />
+                        <button type="button" onClick={() => setModoNuevoConcesionario(false)} style={{ background: '#475569', color: '#fff', border: 'none', padding: '0 10px', borderRadius: '4px', cursor: 'pointer' }}>✕</button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 3. PLAN */}
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Plan</label>
+                    {!modoNuevoPlan ? (
+                      <select 
+                        value={nuevaVenta.plan} 
+                        onChange={e => {
+                          if (e.target.value === '___NUEVO___') {
+                            setModoNuevoPlan(true);
+                          } else {
+                            actualizarCalculosFinancieros({ plan: e.target.value });
+                          }
+                        }} 
+                        style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }}>
+                        {listaPlanes.map((p, i) => (
+                          <option key={i} value={p}>{p}</option>
+                        ))}
+                        <option value="___NUEVO___" style={{ color: '#D96B27', fontWeight: 'bold' }}>+ Agregar nuevo plan...</option>
+                      </select>
+                    ) : (
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <input 
+                          type="text" 
+                          placeholder="Ej: 12 Meses - Semanal" 
+                          value={nuevoPlanInput} 
+                          onChange={e => setNuevoPlanInput(e.target.value)} 
+                          style={{ flex: 1, background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} 
+                          autoFocus
+                        />
+                        <button type="button" onClick={() => setModoNuevoPlan(false)} style={{ background: '#475569', color: '#fff', border: 'none', padding: '0 10px', borderRadius: '4px', cursor: 'pointer' }}>✕</button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 4. NOMBRE DEL CLIENTE */}
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Nombre del cliente</label>
+                    <input type="text" placeholder="Nombre completo" value={nuevaVenta.cliente} onChange={e => actualizarCalculosFinancieros({ cliente: e.target.value })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} required />
+                  </div>
+
+                  {/* 5. NÚMERO DEL CLIENTE */}
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Número del cliente</label>
+                    <input type="text" placeholder="Ej: 584126000000" value={nuevaVenta.telefono} onChange={e => actualizarCalculosFinancieros({ telefono: e.target.value })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                  </div>
+
+                  {/* 6. DÍA DE CUOTA */}
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Día de cuota</label>
+                    <select 
+                      value={nuevaVenta.cuota} 
+                      onChange={e => actualizarCalculosFinancieros({ cuota: e.target.value })} 
+                      style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }}>
+                      {listaDias.map((d, i) => (
+                        <option key={i} value={d}>{d}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* 7. COSTO CONCESIONARIO */}
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Costo concesionario ($)</label>
+                    <input 
+                      type="number" 
+                      step="0.01" 
+                      placeholder="0.00" 
+                      value={nuevaVenta.costoConcesionario || ''} 
+                      onChange={e => actualizarCalculosFinancieros({ costoConcesionario: parseFloat(e.target.value) || 0 })} 
+                      style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} 
+                    />
+                  </div>
+
+                  {/* 8. INICIAL ($) */}
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8, color: '#38bdf8', fontWeight: 'bold' }}>Inicial ($)</label>
+                    <input 
+                      type="number" 
+                      step="0.01" 
+                      value={nuevaVenta.inicial || 0} 
+                      onChange={e => actualizarCalculosFinancieros({ inicial: parseFloat(e.target.value) || 0 })} 
+                      style={{ width: '100%', background: isDark ? '#162235' : '#e0f2fe', color: '#38bdf8', border: `1px solid #38bdf8`, padding: '8px', borderRadius: '4px', fontWeight: 'bold' }} 
+                    />
+                  </div>
+
+                  {/* 9. CANON SEMANAL ($) */}
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8, color: '#38bdf8', fontWeight: 'bold' }}>Canon semanal ($)</label>
+                    <input 
+                      type="number" 
+                      step="0.01" 
+                      value={nuevaVenta.canon || 0} 
+                      onChange={e => actualizarCalculosFinancieros({ canon: parseFloat(e.target.value) || 0 })} 
+                      style={{ width: '100%', background: isDark ? '#162235' : '#e0f2fe', color: '#38bdf8', border: `1px solid #38bdf8`, padding: '8px', borderRadius: '4px', fontWeight: 'bold' }} 
+                    />
+                  </div>
+
+                  {/* 10. MARCA */}
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Marca</label>
+                    {!modoNuevaMarca ? (
+                      <select 
+                        value={nuevaVenta.marca} 
+                        onChange={e => {
+                          if (e.target.value === '___NUEVO___') {
+                            setModoNuevaMarca(true);
+                          } else {
+                            actualizarCalculosFinancieros({ marca: e.target.value });
+                          }
+                        }} 
+                        style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }}>
+                        {listaMarcas.map((m, i) => (
+                          <option key={i} value={m}>{m}</option>
+                        ))}
+                        <option value="___NUEVO___" style={{ color: '#D96B27', fontWeight: 'bold' }}>+ Agregar nueva marca...</option>
+                      </select>
+                    ) : (
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <input 
+                          type="text" 
+                          placeholder="Nombre de la nueva marca" 
+                          value={nuevaMarcaInput} 
+                          onChange={e => setNuevaMarcaInput(e.target.value)} 
+                          style={{ flex: 1, background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} 
+                          autoFocus
+                        />
+                        <button type="button" onClick={() => setModoNuevaMarca(false)} style={{ background: '#475569', color: '#fff', border: 'none', padding: '0 10px', borderRadius: '4px', cursor: 'pointer' }}>✕</button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 11. MOTO */}
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Moto</label>
+                    {!modoNuevaMoto ? (
+                      <select 
+                        value={nuevaVenta.moto} 
+                        onChange={e => {
+                          if (e.target.value === '___NUEVO___') {
+                            setModoNuevaMoto(true);
+                          } else {
+                            actualizarCalculosFinancieros({ moto: e.target.value });
+                          }
+                        }} 
+                        style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }}>
+                        {listaMotos.map((m, i) => (
+                          <option key={i} value={m}>{m}</option>
+                        ))}
+                        <option value="___NUEVO___" style={{ color: '#D96B27', fontWeight: 'bold' }}>+ Agregar nueva moto...</option>
+                      </select>
+                    ) : (
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <input 
+                          type="text" 
+                          placeholder="Nombre o modelo de moto" 
+                          value={nuevaMotoInput} 
+                          onChange={e => setNuevaMotoInput(e.target.value)} 
+                          style={{ flex: 1, background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} 
+                          autoFocus
+                        />
+                        <button type="button" onClick={() => setModoNuevaMoto(false)} style={{ background: '#475569', color: '#fff', border: 'none', padding: '0 10px', borderRadius: '4px', cursor: 'pointer' }}>✕</button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 12. IMEI GPS (Opcional) */}
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>IMEI GPS <span style={{ fontSize: '11px', opacity: 0.6 }}>(Opcional)</span></label>
+                    <input type="text" placeholder="Número de IMEI (Opcional)" value={nuevaVenta.imei} onChange={e => actualizarCalculosFinancieros({ imei: e.target.value })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                  </div>
+
+                  {/* 13. N° DE CERTIFICADO (Opcional) */}
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>N° de certificado <span style={{ fontSize: '11px', opacity: 0.6 }}>(Opcional)</span></label>
+                    <input type="text" placeholder="Ej: AA-1278490 (Opcional)" value={nuevaVenta.certificado} onChange={e => actualizarCalculosFinancieros({ certificado: e.target.value })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                  </div>
+
+                  {/* 14. PAGO A CONCESIONARIO */}
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8, color: '#10b981', fontWeight: 'bold' }}>Pago a concesionario ($)</label>
+                    <input 
+                      type="number" 
+                      step="0.01" 
+                      value={nuevaVenta.pagoConcesionario || 0} 
+                      readOnly
+                      style={{ width: '100%', background: isDark ? '#11221c' : '#d1fae5', color: '#10b981', border: `1px solid #10b981`, padding: '8px', borderRadius: '4px', fontWeight: 'bold' }} 
+                    />
+                  </div>
+
+                  {/* 15. PROYECCIÓN DEL INTERÉS */}
+                  <div style={{ gridColumn: 'span 2' }}>
+                    <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8, color: '#38bdf8', fontWeight: 'bold' }}>Proyección del interés ($)</label>
+                    <input 
+                      type="number" 
+                      step="0.01" 
+                      value={nuevaVenta.proyeccionInteres || 0} 
+                      readOnly
+                      style={{ width: '100%', background: isDark ? '#162235' : '#e0f2fe', color: '#38bdf8', border: `1px solid #38bdf8`, padding: '8px', borderRadius: '4px', fontWeight: 'bold' }} 
+                    />
+                  </div>
+
+                  <div style={{ gridColumn: 'span 2', display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '15px' }}>
+                    <button type="button" onClick={() => setShowModal(false)} style={{ background: '#475569', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
+                      Cancelar
+                    </button>
+                    <button type="submit" style={{ background: '#10b981', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
+                      Guardar e Integrar Venta 🏍️💨
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* 1. VENTANA: CONTROL DE VENTAS */}
+          {activeTab === 'ventas' && (
             <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '16px', overflowX: 'auto', boxShadow: isDark ? 'none' : '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
                 <h3 style={{ margin: 0, fontSize: '15px', color: '#D96B27' }}>Matriz de Ventas y Unidades Registradas</h3>
-                <span style={{ fontSize: '12px', opacity: 0.7 }}>Registros Filtrados: {flotaFiltrada.length} de {flota.length}</span>
+                <span style={{ fontSize: '12px', opacity: 0.7 }}>Total Registros: {flota.length}</span>
               </div>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', whiteSpace: 'nowrap', textAlign: 'left' }}>
                 <thead>
@@ -347,14 +680,15 @@ export default function RueddaControlArrendamiento() {
                     <th style={{ padding: '10px' }}>Canon Semanal</th>
                     <th style={{ padding: '10px' }}>Marca</th>
                     <th style={{ padding: '10px' }}>Moto</th>
-                    <th style={{ padding: '10px' }}>Corte Fin</th>
+                    <th style={{ padding: '10px' }}>IMEI GPS</th>
+                    <th style={{ padding: '10px' }}>N° Certificado</th>
                     <th style={{ padding: '10px' }}>Costo Concesionario</th>
                     <th style={{ padding: '10px' }}>Pago a Concesionario</th>
                     <th style={{ padding: '10px' }}>Proyección Interés</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {flotaFiltrada.map((item, index) => (
+                  {flota.map((item, index) => (
                     <tr key={index} style={{ borderBottom: `1px solid ${borderColor}`, background: index % 2 === 0 ? (isDark ? '#1e1e1e' : '#ffffff') : (isDark ? '#161616' : '#f8fafc') }}>
                       <td style={{ padding: '6px' }}><input type="text" value={item.fecha} onChange={(e) => handleFlotaChange(index, 'fecha', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
                       <td style={{ padding: '6px' }}><input type="text" value={item.concesionario} onChange={(e) => handleFlotaChange(index, 'concesionario', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '150px' }} /></td>
@@ -366,7 +700,8 @@ export default function RueddaControlArrendamiento() {
                       <td style={{ padding: '6px' }}><input type="number" value={Number(item.canon || 0).toFixed(2)} onChange={(e) => handleFlotaChange(index, 'canon', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '80px' }} /></td>
                       <td style={{ padding: '6px' }}><input type="text" value={item.marca} onChange={(e) => handleFlotaChange(index, 'marca', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
                       <td style={{ padding: '6px' }}><input type="text" value={item.moto} onChange={(e) => handleFlotaChange(index, 'moto', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="text" value={item.fechaCorte} onChange={(e) => handleFlotaChange(index, 'fechaCorte', e.target.value)} style={{ background: inputBg, color: '#38bdf8', fontWeight: 'bold', border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
+                      <td style={{ padding: '6px' }}><input type="text" value={item.imei} onChange={(e) => handleFlotaChange(index, 'imei', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '110px' }} /></td>
+                      <td style={{ padding: '6px' }}><input type="text" value={item.certificado} onChange={(e) => handleFlotaChange(index, 'certificado', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
                       <td style={{ padding: '6px' }}><input type="number" value={item.costoConcesionario} onChange={(e) => handleFlotaChange(index, 'costoConcesionario', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
                       <td style={{ padding: '6px' }}><input type="number" value={Number(item.pagoConcesionario || 0).toFixed(2)} onChange={(e) => handleFlotaChange(index, 'pagoConcesionario', parseFloat(e.target.value))} style={{ background: inputBg, color: '#10b981', fontWeight: 'bold', border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
                       <td style={{ padding: '6px', color: '#38bdf8', fontWeight: 'bold' }}>
@@ -377,92 +712,301 @@ export default function RueddaControlArrendamiento() {
                 </tbody>
               </table>
             </div>
+          )}
 
-            {/* TARJETA RESUMEN TOTAL A PAGAR */}
-            <div style={{ 
-              marginTop: '25px', 
-              background: isDark ? 'linear-gradient(135deg, #182823 0%, #111a17 100%)' : 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)', 
-              border: '2px solid #10b981', 
-              borderRadius: '12px', 
-              padding: '24px', 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center', 
-              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.15)' 
-            }}>
-              <div>
-                <h4 style={{ margin: '0 0 6px 0', fontSize: '16px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span>💳</span> Tarjeta Resumen: Total a Pagar a Concesionarios
-                </h4>
-                <p style={{ margin: 0, fontSize: '13px', opacity: 0.85 }}>
-                  Monto total calculado automáticamente para el ciclo de corte seleccionado ({semanaSeleccionada === 'todas' ? 'Todas las semanas' : semanaSeleccionada}).
+          {/* 2. VENTANA: REPORTE DE PAGO */}
+          {activeTab === 'pagos' && (
+            <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '20px', maxWidth: '900px' }}>
+              <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', color: '#D96B27' }}>Sincronización y Liquidación por Sede</h3>
+              <p style={{ fontSize: '12px', opacity: 0.6, margin: '0 0 16px 0' }}>Cálculos consolidados por concesionario en tiempo real.</p>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ background: isDark ? '#1c1c38' : '#e2e8f0', color: textMain, borderBottom: '2px solid #D96B27' }}>
+                    <th style={{ padding: '10px' }}>SEDE / CONCESIONARIO</th>
+                    <th style={{ padding: '10px' }}>Ventas</th>
+                    <th style={{ padding: '10px' }}>Pago Corte (Auto)</th>
+                    <th style={{ padding: '10px' }}>Comisión 1%</th>
+                    <th style={{ padding: '10px' }}>Penalización</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sedesCalculadas.map((item, index) => (
+                    <tr key={index} style={{ borderBottom: `1px solid ${borderColor}` }}>
+                      <td style={{ padding: '10px', fontWeight: 'bold' }}>{item.sede}</td>
+                      <td style={{ padding: '10px', textAlign: 'center' }}>
+                        <span style={{ background: '#D96B27', color: '#fff', padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold' }}>
+                          {item.ventasCount}
+                        </span>
+                      </td>
+                      <td style={{ padding: '10px', fontWeight: 'bold', color: '#10b981', fontSize: '14px' }}>
+                        ${item.pagoCorte.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </td>
+                      <td style={{ padding: '10px', fontWeight: 'bold', color: '#38bdf8', fontSize: '14px' }}>
+                        ${item.comision.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </td>
+                      <td style={{ padding: '10px' }}>
+                        <input 
+                          type="number" 
+                          value={item.pen} 
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const indexCfg = sedesConfig.findIndex(s => s.sede === item.sede);
+                            if (indexCfg >= 0) {
+                              handleSedeChange(indexCfg, 'pen', val);
+                            } else {
+                              setSedesConfig([...sedesConfig, { sede: item.sede, pen: parseFloat(val) || 0 }]);
+                            }
+                          }} 
+                          style={{ background: inputBg, color: '#ef4444', border: `1px solid ${inputBorder}`, padding: '6px', borderRadius: '4px', width: '90px', fontWeight: 'bold' }} 
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                  <tr style={{ background: isDark ? '#262626' : '#f1f5f9', borderTop: '2px solid #D96B27', fontWeight: 'bold' }}>
+                    <td style={{ padding: '12px', color: '#D96B27' }}>TOTALES GENERALES:</td>
+                    <td style={{ padding: '12px', textAlign: 'center', color: '#D96B27' }}>{flota.length}</td>
+                    <td style={{ padding: '12px', color: '#10b981', fontSize: '14px' }}>${totalPagoCorte.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td style={{ padding: '12px', color: '#38bdf8', fontSize: '14px' }}>${totalComisionSedes.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td style={{ padding: '12px', color: '#ef4444', fontSize: '14px' }}>${totalPenSedes.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* 3. VENTANA: MÉTRICAS DE VENTA */}
+          {activeTab === 'metricas' && (
+            <div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '25px' }}>
+                <div style={{ background: cardBg, border: `1px solid ${borderColor}`, padding: '20px', borderRadius: '8px', borderLeft: '4px solid #D96B27' }}>
+                  <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Total Unidades Activas</p>
+                  <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0 0 0', color: '#D96B27' }}>{flota.length}</h2>
+                </div>
+                <div style={{ background: cardBg, border: `1px solid ${borderColor}`, padding: '20px', borderRadius: '8px', borderLeft: '4px solid #10b981' }}>
+                  <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Costo Total Concesionario</p>
+                  <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0 0 0', color: '#10b981' }}>${totalCostoConcesionario.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
+                </div>
+                <div style={{ background: cardBg, border: `1px solid ${borderColor}`, padding: '20px', borderRadius: '8px', borderLeft: '4px solid #38bdf8' }}>
+                  <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Proyección Total Interés</p>
+                  <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0 0 0', color: '#38bdf8' }}>${totalProyeccionInteres.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
+                </div>
+              </div>
+            </div>
+          )}
+'use client'
+import React, { useState } from 'react';
+
+// Datos históricos organizados de la flota
+const datosInicialesFlota = [
+  { fecha: "10/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Alberto Rafael Salas Martinez", nroCliente: "584167171297", inicial: 440.00, diaCuota: "Lunes", canon: 109.27, pagoConcesionario: 1160.00 },
+  { fecha: "11/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Freddy David Perez Peña", nroCliente: "584126034365", inicial: 277.75, diaCuota: "Martes", canon: 68.98, pagoConcesionario: 732.25 },
+  { fecha: "11/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Jesus German Barrios Yecerra", nroCliente: "584241323953", inicial: 272.25, diaCuota: "Martes", canon: 67.61, pagoConcesionario: 717.75 },
+  { fecha: "12/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Darwin Alexander Contreras Vivenes", nroCliente: "584127001792", inicial: 269.50, diaCuota: "Miércoles", canon: 66.93, pagoConcesionario: 710.50 },
+  { fecha: "13/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Henry Alberto Montes Paez", nroCliente: "584162472235", inicial: 261.25, diaCuota: "Jueves", canon: 64.88, pagoConcesionario: 688.75 },
+  { fecha: "13/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Enderson Agustin Alvares Contreras", nroCliente: "584241741879", inicial: 261.25, diaCuota: "Jueves", canon: 64.88, pagoConcesionario: 688.75 },
+  { fecha: "14/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Emilio Manuel Caballero Tovar", nroCliente: "584129006146", inicial: 250.25, diaCuota: "Viernes", canon: 62.15, pagoConcesionario: 659.75 },
+  { fecha: "15/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Daniel Jose Medina Martinez", nroCliente: "584141785721", inicial: 412.50, diaCuota: "Sábado", canon: 102.44, pagoConcesionario: 1087.50 },
+  { fecha: "17/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Miguel Angel Paraqueimo Barrera", nroCliente: "584166109994", inicial: 250.25, diaCuota: "Lunes", canon: 62.15, pagoConcesionario: 659.75 },
+  { fecha: "18/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Javier Enrique Astudillo Rodriguez", nroCliente: "584123394266", inicial: 272.25, diaCuota: "Martes", canon: 67.61, pagoConcesionario: 717.75 },
+  { fecha: "18/08/2026", concesionario: "Urdaneta Motors 2025 C.A.", plan: "6 Meses - Semanal", cliente: "William Jose Isturiz Velazquez", nroCliente: "584125020646", inicial: 561.00, diaCuota: "Martes", canon: 139.32, pagoConcesionario: 1479.00 },
+  { fecha: "18/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Diego Andres Osorio Salas", nroCliente: "584141849057", inicial: 272.25, diaCuota: "Martes", canon: 67.61, pagoConcesionario: 717.75 },
+  { fecha: "18/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Maryuri Coromoto Rodriguez Perdomo", nroCliente: "584128539992", inicial: 272.25, diaCuota: "Martes", canon: 67.61, pagoConcesionario: 717.75 },
+  { fecha: "18/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Eduardo Yohan Sanz Tovar", nroCliente: "584241434152", inicial: 272.25, diaCuota: "Martes", canon: 67.61, pagoConcesionario: 717.75 },
+  { fecha: "19/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Yonaiker Javier Tinedo Bolivar", nroCliente: "584127405631", inicial: 272.25, diaCuota: "Miércoles", canon: 67.61, pagoConcesionario: 717.75 },
+  { fecha: "19/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Gregori Jose Diaz Luces", nroCliente: "584144232419", inicial: 272.25, diaCuota: "Miércoles", canon: 67.61, pagoConcesionario: 717.75 },
+  { fecha: "19/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Enrique De Castro", nroCliente: "584144351121", inicial: 272.25, diaCuota: "Miércoles", canon: 67.61, pagoConcesionario: 717.75 },
+  { fecha: "20/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Alexis Youssethy Hernandez Medina", nroCliente: "584120723919", inicial: 272.25, diaCuota: "Jueves", canon: 67.61, pagoConcesionario: 717.75 },
+  { fecha: "20/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Eliezer Josue Valerio Fajardo", nroCliente: "584125891189", inicial: 272.25, diaCuota: "Jueves", canon: 67.61, pagoConcesionario: 717.75 },
+  { fecha: "20/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Jhonkleiver Alexander Gonzalez Guillen", nroCliente: "584246989736", inicial: 272.25, diaCuota: "Jueves", canon: 67.61, pagoConcesionario: 717.75 },
+  { fecha: "20/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Carlos Alfredo Castro Jaimes", nroCliente: "584221461800", inicial: 272.25, diaCuota: "Jueves", canon: 67.61, pagoConcesionario: 717.75 },
+  { fecha: "20/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Samuel Jesus Marcano Becerra", nroCliente: "584129186948", inicial: 250.25, diaCuota: "Jueves", canon: 62.15, pagoConcesionario: 659.75 },
+  { fecha: "21/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Jorge Luis Graterol Balza", nroCliente: "584220503887", inicial: 275.25, diaCuota: "Viernes", canon: 67.61, pagoConcesionario: 714.75 },
+  { fecha: "21/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Oswaldo Jesus Alvarez Gonzalez", nroCliente: "584242814005", inicial: 577.50, diaCuota: "Viernes", canon: 143.42, pagoConcesionario: 1522.50 },
+  { fecha: "21/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Barbara Gonzalez", nroCliente: "584247618041", inicial: 250.25, diaCuota: "Viernes", canon: 62.15, pagoConcesionario: 659.75 },
+  { fecha: "22/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Jesus Alexander Garcia Mujica", nroCliente: "584128693531", inicial: 272.25, diaCuota: "Sábado", canon: 62.15, pagoConcesionario: 717.75 },
+  { fecha: "22/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Enderson Gabriel Moya", nroCliente: "584142514532", inicial: 272.25, diaCuota: "Sábado", canon: 62.15, pagoConcesionario: 717.75 },
+  { fecha: "22/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Ramon Alexander Viera Palacios", nroCliente: "584122656253", inicial: 272.25, diaCuota: "Sábado", canon: 62.15, pagoConcesionario: 717.75 },
+  { fecha: "22/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Joseph Eduardo Salinas Jaspe", nroCliente: "584127336304", inicial: 272.25, diaCuota: "Sábado", canon: 62.15, pagoConcesionario: 717.75 },
+  { fecha: "18/08/2026", concesionario: "Turbo Motos C.A", plan: "6 Meses - Semanal", cliente: "Moises Roziel Lugo Ramos", nroCliente: "584129670328", inicial: 266.75, diaCuota: "Martes", canon: 66.25, pagoConcesionario: 703.25 },
+  { fecha: "25/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Aiverson Jose Quevedo Vetancourt", nroCliente: "584241786003", inicial: 272.25, diaCuota: "Martes", canon: 67.61, pagoConcesionario: 717.75 },
+  { fecha: "25/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Reinaldo Antonio Ibarra Martinez", nroCliente: "584241668148", inicial: 272.25, diaCuota: "Martes", canon: 67.61, pagoConcesionario: 717.75 },
+  { fecha: "25/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Jorge Manuel Contreras Oviedo", nroCliente: "584122794664", inicial: 272.25, diaCuota: "Martes", canon: 67.61, pagoConcesionario: 717.75 },
+  { fecha: "27/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Edgar Antonio Manrique Lopez", nroCliente: "584242555796", inicial: 272.25, diaCuota: "Jueves", canon: 67.61, pagoConcesionario: 717.75 },
+  { fecha: "28/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Dervin Yorman González Tirado", nroCliente: "584221762816", inicial: 272.25, diaCuota: "Viernes", canon: 67.61, pagoConcesionario: 717.75 },
+  { fecha: "28/08/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Yeison Gabriel Figuera Rangel", nroCliente: "584128026317", inicial: 272.25, diaCuota: "Viernes", canon: 67.61, pagoConcesionario: 717.75 },
+  { fecha: "29/08/2026", concesionario: "Urdaneta Motors 2025 C.A.", plan: "6 Meses - Semanal", cliente: "Juan Carlos Bravo Rosales", nroCliente: "584142543814", inicial: 508.75, diaCuota: "Sábado", canon: 126.35, pagoConcesionario: 1341.25 },
+  { fecha: "04/09/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Elias Jose Cardona De La Hoz", nroCliente: "584143348308", inicial: 341.00, diaCuota: "Viernes", canon: 84.69, pagoConcesionario: 899.00 },
+  { fecha: "07/09/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Robert Alejandro Palacios Silva", nroCliente: "584125922334", inicial: 341.00, diaCuota: "Lunes", canon: 84.69, pagoConcesionario: 899.00 },
+  { fecha: "08/09/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Jesus Enrrique Mundo Perez", nroCliente: "584123434328", inicial: 341.00, diaCuota: "Martes", canon: 84.69, pagoConcesionario: 899.00 },
+  { fecha: "08/09/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Gabriel Arturo Dominguez Moreno", nroCliente: "584242504140", inicial: 341.00, diaCuota: "Martes", canon: 84.69, pagoConcesionario: 899.00 },
+  { fecha: "08/09/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Andrea De La Caridad Corrales Hernandez", nroCliente: "584123690720", inicial: 453.75, diaCuota: "Martes", canon: 112.69, pagoConcesionario: 1196.25 },
+  { fecha: "11/09/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Angel Eduardo Hilarraza Marquez", nroCliente: "584129107146", inicial: 341.00, diaCuota: "Viernes", canon: 84.69, pagoConcesionario: 899.00 },
+  { fecha: "11/09/2026", concesionario: "Velocity Motos. C.A", plan: "6 Meses - Semanal", cliente: "Marcos Sleyder Bozo Perez", nroCliente: "584243571388", inicial: 506.00, diaCuota: "Viernes", canon: 125.66, pagoConcesionario: 1334.00 },
+  { fecha: "14/09/2026", concesionario: "INVERSIONES CHT30, C.A", plan: "6 Meses - Semanal", cliente: "Alexair Armando Marin Nuñez", nroCliente: "584142038890", inicial: 341.00, diaCuota: "Lunes", canon: 84.69, pagoConcesionario: 899.00 },
+  { fecha: "15/09/2026", concesionario: "INVERSIONES CHT30, C.A", plan: "6 Meses - Semanal", cliente: "Jesús Alejandro Rivas Toledo", nroCliente: "584242659200", inicial: 341.00, diaCuota: "Martes", canon: 84.69, pagoConcesionario: 899.00 },
+  { fecha: "15/09/2026", concesionario: "INVERSIONES CHT30, C.A", plan: "6 Meses - Semanal", cliente: "Luis Armando Hernandez Nuñez", nroCliente: "584142199621", inicial: 341.00, diaCuota: "Martes", canon: 84.69, pagoConcesionario: 899.00 },
+  { fecha: "15/09/2026", concesionario: "AKOX, C.A", plan: "6 Meses - Semanal", cliente: "Jesus Antonio Mendoza Bustos", nroCliente: "584244637111", inicial: 370.98, diaCuota: "Martes", canon: 92.13, pagoConcesionario: 978.02 },
+  { fecha: "16/09/2026", concesionario: "INVERSIONES CHT30, C.A", plan: "6 Meses - Semanal", cliente: "Renzo Rene Justo Lucena", nroCliente: "584128201063", inicial: 764.50, diaCuota: "Miércoles", canon: 189.86, pagoConcesionario: 2015.50 },
+  { fecha: "16/09/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Derek Alexander Salcedo Da Silva", nroCliente: "584120204108", inicial: 341.00, diaCuota: "Miércoles", canon: 84.69, pagoConcesionario: 899.00 },
+  { fecha: "16/09/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Jose Alejandro Lanza Rangel", nroCliente: "584129007520", inicial: 341.00, diaCuota: "Miércoles", canon: 84.69, pagoConcesionario: 899.00 },
+  { fecha: "16/09/2026", concesionario: "NECATIX C.A", plan: "6 Meses - Semanal", cliente: "John Carvajal", nroCliente: "584242698653", inicial: 528.00, diaCuota: "Miércoles", canon: 131.13, pagoConcesionario: 1392.00 },
+  { fecha: "17/09/2026", concesionario: "INVERSIONES CHT30, C.A", plan: "6 Meses - Semanal", cliente: "Anderson Samuel Vital Echarry", nroCliente: "584242115349", inicial: 764.50, diaCuota: "Jueves", canon: 189.86, pagoConcesionario: 2015.50 },
+  { fecha: "17/09/2026", concesionario: "INVERSIONES CHT30, C.A", plan: "6 Meses - Semanal", cliente: "Freddy Alberto Adrian Martinez", nroCliente: "584127241244", inicial: 341.00, diaCuota: "Jueves", canon: 84.69, pagoConcesionario: 899.00 },
+  { fecha: "17/09/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses - Semanal", cliente: "Junior Jose Mijares Rebolledo", nroCliente: "584129835922", inicial: 327.25, diaCuota: "Jueves", canon: 81.27, pagoConcesionario: 862.75 },
+  { fecha: "18/09/2026", concesionario: "NECATIX C.A", plan: "6 Meses - Semanal", cliente: "Rene Gil Davila Ceballos", nroCliente: "584125587761", inicial: 393.25, diaCuota: "Viernes", canon: 97.66, pagoConcesionario: 1036.75 },
+  { fecha: "18/09/2026", concesionario: "NECATIX C.A", plan: "6 Meses Semanal", cliente: "Johanstne Enrique Contreras Suarez", nroCliente: "584242363518", inicial: 727.38, diaCuota: "Viernes", canon: 180.64, pagoConcesionario: 1917.62 },
+  { fecha: "18/09/2026", concesionario: "AKOX, C.A", plan: "6 Meses Semanal", cliente: "Pedro Armando Zambrano Mejias", nroCliente: "584223340751", inicial: 357.23, diaCuota: "Viernes", canon: 88.72, pagoConcesionario: 937.77 },
+  { fecha: "18/09/2026", concesionario: "NECATIX C.A", plan: "6 Meses Semanal", cliente: "Jesus Antonio Rodriguez Tovar", nroCliente: "584120416018", inicial: 341.00, diaCuota: "Viernes", canon: 84.69, pagoConcesionario: 899.00 },
+  { fecha: "18/09/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses Semanal", cliente: "Maikel Enrique Hernandez", nroCliente: "584149204417", inicial: 327.25, diaCuota: "Viernes", canon: 81.27, pagoConcesionario: 862.75 },
+  { fecha: "18/09/2026", concesionario: "INVERSIONES CHT30, C.A", plan: "6 Meses Semanal", cliente: "Arnaldo Rafael Lazo Azocar", nroCliente: "584122553002", inicial: 341.00, diaCuota: "Viernes", canon: 84.69, pagoConcesionario: 899.00 },
+  { fecha: "19/09/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses Semanal", cliente: "Joselin Valeria Ordoñez Bastidas", nroCliente: "584247681578", inicial: 341.00, diaCuota: "Sábado", canon: 84.69, pagoConcesionario: 899.00 },
+  { fecha: "19/09/2026", concesionario: "Motores Del Este VIP C.A.", plan: "6 Meses Semanal", cliente: "Juan Jose Pereira Viloria", nroCliente: "584121413638", inicial: 341.00, diaCuota: "Sábado", canon: 84.69, pagoConcesionario: 899.00 },
+  { fecha: "21/09/2026", concesionario: "INVERSIONES CHT30, C.A", plan: "6 Meses Semanal", cliente: "Rosalba Angelica Lopez Cordovez", nroCliente: "584129188557", inicial: 998.25, diaCuota: "Lunes", canon: 247.91, pagoConcesionario: 2631.75 },
+  { fecha: "22/09/2026", concesionario: "Turbo Motos C.A", plan: "6 Meses Semanal", cliente: "Robert Gerardo Palacios Molina", nroCliente: "584243113783", inicial: 316.25, diaCuota: "Martes", canon: 78.54, pagoConcesionario: 833.75 }
+];
+
+export default function ControlVentasFlota() {
+  const [semanaSeleccionada, setSemanaSeleccionada] = useState("10/08/2026 - 15/08/2026");
+
+  // Definición de los cortes semanales
+  const cortesSemanales = [
+    { label: "Corte 1: 10/08/2026 al 15/08/2026", inicio: "2026-08-10", fin: "2026-08-15" },
+    { label: "Corte 2: 17/08/2026 al 22/08/2026", inicio: "2026-08-17", fin: "2026-08-22" },
+    { label: "Corte 3: 24/08/2026 al 29/08/2026", inicio: "2026-08-24", fin: "2026-08-29" },
+    { label: "Corte 4: 31/08/2026 al 05/09/2026", inicio: "2026-08-31", fin: "2026-09-05" },
+    { label: "Corte 5: 07/09/2026 al 12/09/2026", inicio: "2026-09-07", fin: "2026-09-12" },
+    { label: "Corte 6: 14/09/2026 al 19/09/2026", inicio: "2026-09-14", fin: "2026-09-19" },
+    { label: "Corte 7: 21/09/2026 al 26/09/2026", inicio: "2026-09-21", fin: "2026-09-26" },
+  ];
+
+  // Función para convertir fecha 'DD/MM/YYYY' a objeto Date y comparar
+  const parsearFecha = (strFecha: string) => {
+    const [d, m, y] = strFecha.split('/');
+    return new Date(Number(y), Number(m) - 1, Number(d));
+  };
+
+  // Filtrar registros según la semana seleccionada
+  const corteActualObj = cortesSemanales.find(c => c.label === semanaSeleccionada) || cortesSemanales[0];
+  const fechaInicio = new Date(corteActualObj.inicio);
+  const fechaFin = new Date(corteActualObj.fin);
+
+  const datosFiltrados = datosInicialesFlota.filter(item => {
+    const fItem = parsearFecha(item.fecha);
+    return fItem >= fechaInicio && fItem <= fechaFin;
+  });
+
+  // Calcular la suma total de pago a concesionarios en base al filtro actual
+  const totalPagoConcesionarios = datosFiltrados.reduce((acc, curr) => acc + curr.pagoConcesionario, 0);
+
+  return (
+    <div style={{ padding: '24px', backgroundColor: '#09090b', minHeight: '100vh', color: '#fff', fontFamily: 'system-ui, sans-serif' }}>
+      
+      {/* Cabecera con Filtro de Semana al lado */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+        <h1 style={{ fontSize: '22px', fontWeight: 900, margin: 0, color: '#fff' }}>
+          Control de Ventas y Registro Maestro de Flota 🚗💨
+        </h1>
+
+        {/* Filtro de Semana */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#18181b', padding: '8px 12px', borderRadius: '8px', border: '1px solid #27272a' }}>
+          <span style={{ fontSize: '13px', color: '#a1a1aa', fontWeight: 600 }}>Semana de Corte:</span>
+          <select 
+            value={semanaSeleccionada}
+            onChange={(e) => setSemanaSeleccionada(e.target.value)}
+            style={{ background: '#27272a', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '13px', cursor: 'pointer', outline: 'none' }}
+          >
+            {cortesSemanales.map((corte, index) => (
+              <option key={index} value={corte.label}>{corte.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Contenedor Principal de la Tabla */}
+      <div style={{ background: '#121215', border: '1px solid #27272a', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid #27272a', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#18181b' }}>
+          <span style={{ fontWeight: 700, color: '#D96B27', fontSize: '15px' }}>Matriz de Ventas y Unidades Registradas</span>
+          <span style={{ fontSize: '13px', color: '#a1a1aa' }}>Total Registros en este corte: <strong style={{ color: '#fff' }}>{datosFiltrados.length}</strong></span>
+        </div>
+
+        <div style={{ overflowX: 'auto', maxHeight: '450px' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+            <thead>
+              <tr style={{ background: '#D96B27', color: '#fff', position: 'sticky', top: 0, zIndex: 10 }}>
+                <th style={{ padding: '12px 16px' }}>Fecha</th>
+                <th style={{ padding: '12px 16px' }}>Concesionario</th>
+                <th style={{ padding: '12px 16px' }}>Plan</th>
+                <th style={{ padding: '12px 16px' }}>Nombre del Cliente</th>
+                <th style={{ padding: '12px 16px' }}>Nro. Cliente</th>
+                <th style={{ padding: '12px 16px' }}>Inicial ($)</th>
+                <th style={{ padding: '12px 16px' }}>Día Cuota</th>
+                <th style={{ padding: '12px 16px' }}>Canon Semanal ($)</th>
+                <th style={{ padding: '12px 16px' }}>Pago Concesionario ($)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {datosFiltrados.length > 0 ? (
+                datosFiltrados.map((item, idx) => (
+                  <tr key={idx} style={{ borderBottom: '1px solid #27272a', background: idx % 2 === 0 ? '#121215' : '#18181b' }}>
+                    <td style={{ padding: '12px 16px', color: '#a1a1aa' }}>{item.fecha}</td>
+                    <td style={{ padding: '12px 16px', fontWeight: 600 }}>{item.concesionario}</td>
+                    <td style={{ padding: '12px 16px', color: '#a1a1aa' }}>{item.plan}</td>
+                    <td style={{ padding: '12px 16px', fontWeight: 600, color: '#fff' }}>{item.cliente}</td>
+                    <td style={{ padding: '12px 16px', color: '#a1a1aa' }}>{item.nroCliente}</td>
+                    <td style={{ padding: '12px 16px' }}>${item.inicial.toFixed(2)}</td>
+                    <td style={{ padding: '12px 16px', color: '#D96B27', fontWeight: 600 }}>{item.diaCuota}</td>
+                    <td style={{ padding: '12px 16px' }}>${item.canon.toFixed(2)}</td>
+                    <td style={{ padding: '12px 16px', fontWeight: 700, color: '#10b981' }}>${item.pagoConcesionario.toFixed(2)}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={9} style={{ padding: '30px', textAlign: 'center', color: '#71717a' }}>
+                    No hay registros de ventas para esta semana de corte seleccionada.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Sub-cuadro: Total de Pago a Realizar */}
+      <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ background: '#18181b', border: '1px solid #27272a', borderRadius: '12px', padding: '20px 30px', minWidth: '320px', boxShadow: '0 4px 15px rgba(0,0,0,0.3)', borderLeft: '4px solid #10b981' }}>
+          <span style={{ fontSize: '13px', color: '#a1a1aa', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700, display: 'block', marginBottom: '4px' }}>
+            Total de pago a realizar (Corte Actual):
+          </span>
+          <div style={{ fontSize: '28px', fontWeight: 900, color: '#10b981' }}>
+            ${totalPagoConcesionarios.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </div>
+          <span style={{ fontSize: '11px', color: '#71717a', marginTop: '4px', display: 'block' }}>
+            Suma total automática de pagos a concesionarios de la semana.
+          </span>
+        </div>
+      </div>
+
+    </div>
+  );
+}
+          {/* 4. VENTANA: REPORTE SEMANAL */}
+          {activeTab === 'semanal' && (
+            <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '20px', maxWidth: '850px' }}>
+              <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#D96B27' }}>RUEDDA* - Resumen Ejecutivo de Cánones y Cobranza</h3>
+              <p style={{ fontSize: '13px', lineHeight: '1.6', opacity: 0.9 }}>
+                Seguimiento semanal de cobranzas y proyecciones financieras automatizadas.
+              </p>
+              <div style={{ marginTop: '20px', padding: '14px', background: isDark ? '#1c1c38' : '#e0f2fe', borderRadius: '6px', borderLeft: '3px solid #0284c7' }}>
+                <p style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: isDark ? '#38bdf8' : '#0369a1' }}>
+                  💡 Proyección de Interés Acumulada de la Flota: <strong style={{ color: '#38bdf8' }}>${totalProyeccionInteres.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong> 🏍️💨
                 </p>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', opacity: 0.8, display: 'block', color: '#10b981', fontWeight: 'bold' }}>Total a Liquidar</span>
-                <span style={{ fontSize: '32px', fontWeight: '900', color: '#10b981' }}>
-                  ${totalPagoFiltradoSemana.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
-              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* 2. VENTANA: REPORTE DE PAGO */}
-        {activeTab === 'pagos' && (
-          <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '20px', maxWidth: '900px' }}>
-            <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', color: '#D96B27' }}>Sincronización y Liquidación por Sede</h3>
-            <p style={{ fontSize: '12px', opacity: 0.6, margin: '0 0 16px 0' }}>Cálculos consolidados para la semana seleccionada.</p>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ background: isDark ? '#1c1c38' : '#e2e8f0', color: textMain, borderBottom: '2px solid #D96B27' }}>
-                  <th style={{ padding: '10px' }}>SEDE / CONCESIONARIO</th>
-                  <th style={{ padding: '10px' }}>Ventas</th>
-                  <th style={{ padding: '10px' }}>Pago Corte (Auto)</th>
-                  <th style={{ padding: '10px' }}>Comisión 1%</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sedesCalculadas.map((item, index) => (
-                  <tr key={index} style={{ borderBottom: `1px solid ${borderColor}` }}>
-                    <td style={{ padding: '10px', fontWeight: 'bold' }}>{item.sede}</td>
-                    <td style={{ padding: '10px', textAlign: 'center' }}>{item.ventasCount}</td>
-                    <td style={{ padding: '10px', fontWeight: 'bold', color: '#10b981' }}>${item.pagoCorte.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                    <td style={{ padding: '10px', fontWeight: 'bold', color: '#38bdf8' }}>${item.comision.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* 3. VENTANA: MÉTRICAS DE VENTA */}
-        {activeTab === 'metricas' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
-            <div style={{ background: cardBg, border: `1px solid ${borderColor}`, padding: '20px', borderRadius: '8px', borderLeft: '4px solid #D96B27' }}>
-              <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Unidades en Ciclo</p>
-              <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0 0 0', color: '#D96B27' }}>{flotaFiltrada.length}</h2>
-            </div>
-            <div style={{ background: cardBg, border: `1px solid ${borderColor}`, padding: '20px', borderRadius: '8px', borderLeft: '4px solid #10b981' }}>
-              <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Costo Concesionario (Filtro)</p>
-              <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0 0 0', color: '#10b981' }}>${totalCostoConcesionario.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
-            </div>
-            <div style={{ background: cardBg, border: `1px solid ${borderColor}`, padding: '20px', borderRadius: '8px', borderLeft: '4px solid #38bdf8' }}>
-              <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Proyección Interés</p>
-              <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0 0 0', color: '#38bdf8' }}>${totalProyeccionInteres.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
-            </div>
-          </div>
-        )}
-
-        {/* 4. VENTANA: REPORTE SEMANAL */}
-        {activeTab === 'semanal' && (
-          <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '20px', maxWidth: '850px' }}>
-            <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#D96B27' }}>RUEDDA* - Resumen Ejecutivo de Cánones y Cobranza</h3>
-            <p style={{ fontSize: '13px', lineHeight: '1.6', opacity: 0.9 }}>Seguimiento semanal de cobranzas y proyecciones financieras automatizadas.</p>
-          </div>
-        )}
+        </div>
 
       </div>
-    </div>
+    </>
   );
 }
