@@ -48,7 +48,7 @@ export default function RueddaControlArrendamiento() {
     'SUPER MOTOS TROPICAL C.A'
   ]);
 
-  const [listaMotos, setListaMotos] = useState(['F16-EXTREME', 'CG-HERO', 'EXPRESS-150', 'WORKER-200']);
+  const [listaMotos, setListaMotos] = useState(['F16-EXTREME', 'CG-HERO', 'EXPRESS-150', 'WORKER-200', 'ALEXA']);
   const [listaMarcas, setListaMarcas] = useState(['Escuda', 'Keeway', 'Empire', 'Bera']);
   const [listaPlanes, setListaPlanes] = useState(['6 Meses - Semanal', '3 Meses - Semanal', '1 Año - Semanal', 'Contado']);
   const [listaDias] = useState(['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']);
@@ -112,9 +112,10 @@ export default function RueddaControlArrendamiento() {
   });
 
   const [flota, setFlota] = useState([
-    { fecha: '10/08/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Alberto Rafael Salas Martinez', telefono: '584167171297', inicial: 341.00, cuota: 'Lunes', canon: 109.27, marca: 'Escuda', moto: 'CG-HERO', semanaId: 1, imei: '863874086467440', certificado: 'AA-1329456', costoConcesionario: 1240.00, pagoConcesionario: 899.00, proyeccionInteres: 1462.56 },
-    { fecha: '11/08/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Freddy David Perez Peña', telefono: '584126034365', inicial: 998.25, cuota: 'Martes', canon: 68.98, marca: 'Escuda', moto: 'ALEXA', semanaId: 1, imei: '863874086280066', certificado: 'AA-1329461', costoConcesionario: 3630.00, pagoConcesionario: 2631.75, proyeccionInteres: 923.15 },
-    { fecha: '11/08/2026', concesionario: 'INVERSIONES CHT30, C.A', plan: '6 Meses - Semanal', cliente: 'Marcos Sleyder Bozo Perez', telefono: '584243571388', inicial: 506.00, cuota: 'Viernes', canon: 125.66, marca: 'Escuda', moto: 'F16-EXTREME', semanaId: 1, imei: '-', certificado: 'AA-1329470', costoConcesionario: 1840.00, pagoConcesionario: 1334.00, proyeccionInteres: 1681.94 }
+    { fecha: '10/08/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Alberto Rafael Salas Martinez', telefono: '584167171297', inicial: 341.00, cuota: 'Lunes', canon: 109.27, marca: 'ESCUDA', moto: 'CG-HERO', semanaId: 1, imei: '863874086467440', certificado: 'AA-1329456', costoConcesionario: 1240.00, pagoConcesionario: 899.00, proyeccionInteres: 1462.56 },
+    { fecha: '11/08/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Freddy David Perez Peña', telefono: '584126034365', inicial: 998.25, cuota: 'Martes', canon: 68.98, marca: 'ESCUDA', moto: 'ALEXA', semanaId: 1, imei: '863874086280066', certificado: 'AA-1329461', costoConcesionario: 3630.00, pagoConcesionario: 2631.75, proyeccionInteres: 923.15 },
+    { fecha: '11/08/2026', concesionario: 'INVERSIONES CHT30, C.A', plan: '6 Meses - Semanal', cliente: 'Marcos Sleyder Bozo Perez', telefono: '584243571388', inicial: 341.00, cuota: 'Viernes', canon: 125.66, marca: 'ESCUDA', moto: 'CG-HERO', semanaId: 1, imei: '-', certificado: 'AA-1329456', costoConcesionario: 1240.00, pagoConcesionario: 899.00, proyeccionInteres: 1681.94 },
+    { fecha: '11/08/2026', concesionario: 'INVERSIONES CHT30, C.A', plan: '6 Meses - Semanal', cliente: 'Marcos Sleyder Bozo Perez 2', telefono: '584243571388', inicial: 998.25, cuota: 'Viernes', canon: 125.66, marca: 'ESCUDA', moto: 'ALEXA', semanaId: 1, imei: '-', certificado: 'AA-1329461', costoConcesionario: 3630.00, pagoConcesionario: 2631.75, proyeccionInteres: 1681.94 }
   ]);
 
   const [sedesConfig, setSedesConfig] = useState([
@@ -199,8 +200,8 @@ export default function RueddaControlArrendamiento() {
       inicial: Number(nuevaVenta.inicial) || 0,
       cuota: nuevaVenta.cuota,
       canon: Number(nuevaVenta.canon) || 0,
-      marca: marcaFinal,
-      moto: motoFinal,
+      marca: marcaFinal.toUpperCase(),
+      moto: motoFinal.toUpperCase(),
       semanaId: semanaSeleccionadaId,
       imei: nuevaVenta.imei.trim() ? nuevaVenta.imei.trim() : '-',
       certificado: nuevaVenta.certificado.trim() ? nuevaVenta.certificado.trim() : 'AA-1329480',
@@ -217,7 +218,6 @@ export default function RueddaControlArrendamiento() {
     setModoNuevaMoto(false);
   };
 
-  // Filtrar la flota según la semana seleccionada
   const flotaFiltradaSemana = useMemo(() => {
     return flota.filter(item => (item.semanaId ?? 1) === semanaSeleccionadaId);
   }, [flota, semanaSeleccionadaId]);
@@ -235,7 +235,6 @@ export default function RueddaControlArrendamiento() {
     });
   }, [flotaFiltradaSemana, sedesConfig]);
 
-  // Cálculos dinámicos del Tabulador Ruedda*
   const tabuladorCalculado = useMemo(() => {
     const precio = Math.max(0, tabuladorPrecioContado);
     const inicial = precio * 0.275;
@@ -443,69 +442,99 @@ export default function RueddaControlArrendamiento() {
           </div>
         )}
 
-        {/* MODAL DE FACTURA OFICIAL AUTOMÁTICA */}
+        {/* MODAL DE FACTURA OFICIAL AUTOMÁTICA (Estética exacta al modelo original) */}
         {showFacturaModal && facturaSeleccionada && (
-          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1100 }}>
-            <div style={{ background: '#ffffff', color: '#0f172a', borderRadius: '8px', padding: '30px', width: '750px', maxWidth: '95%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 15px 35px rgba(0,0,0,0.6)', fontFamily: 'Arial, sans-serif' }}>
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.75)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1100 }}>
+            <div style={{ background: '#ffffff', color: '#000000', borderRadius: '4px', padding: '35px', width: '780px', maxWidth: '95%', maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', fontFamily: 'Arial, sans-serif', position: 'relative' }}>
               
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #D96B27', paddingBottom: '12px', marginBottom: '20px' }}>
-                <div>
-                  <h2 style={{ margin: 0, fontSize: '20px', color: '#D96B27', fontWeight: 'bold' }}>RUEDDA <span style={{ color: '#0f172a' }}>*</span></h2>
-                  <p style={{ margin: '4px 0 0 0', fontSize: '13px', fontWeight: 'bold', color: '#475569' }}>REPORTE DE CORTE SEMANAL — OFICIAL</p>
+              {/* Botón flotante para cerrar / imprimir fuera de la zona de impresión */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', borderBottom: '1px solid #e2e8f0', paddingBottom: '15px' }} className="no-print">
+                <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 'bold' }}>Vista previa de factura oficial</span>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button onClick={() => window.print()} style={{ background: '#D96B27', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px' }}>
+                    🖨️ Imprimir / Guardar PDF
+                  </button>
+                  <button onClick={() => setShowFacturaModal(false)} style={{ background: '#334155', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}>
+                    ✕ Cerrar
+                  </button>
                 </div>
-                <button onClick={() => setShowFacturaModal(false)} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>✕ Cerrar</button>
               </div>
 
-              <div style={{ background: '#f8fafc', padding: '12px 16px', borderRadius: '6px', marginBottom: '20px', border: '1px solid #e2e8f0', fontSize: '13px' }}>
-                <p style={{ margin: '0 0 4px 0' }}><strong>CORTE / N° DE SEMANA:</strong> Corte #{semanaSeleccionadaId} - 2026 ({semanaActualObj.fechaRango})[cite: 16]</p>
-                <p style={{ margin: 0 }}><strong>CONCESIONARIO:</strong> {facturaSeleccionada.sede}[cite: 16]</p>
-              </div>
+              {/* CONTENIDO ESTÉTICO OFICIAL */}
+              <div style={{ fontSize: '12px', color: '#000000' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '11px', color: '#000' }}>24/9/26, 21:53</span>
+                  <span style={{ fontSize: '11px', color: '#000' }}>Reporte de Corte Semanal</span>
+                </div>
 
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', marginBottom: '20px', textAlign: 'left' }}>
-                <thead>
-                  <tr style={{ background: '#1e293b', color: '#fff' }}>
-                    <th style={{ padding: '8px' }}>MARCA</th>
-                    <th style={{ padding: '8px' }}>MODELO</th>
-                    <th style={{ padding: '8px' }}>CERTIFICADO</th>
-                    <th style={{ padding: '8px', textAlign: 'right' }}>PRECIO LISTA ($)</th>
-                    <th style={{ padding: '8px', textAlign: 'right' }}>INICIAL RECIBIDA ($)</th>
-                    <th style={{ padding: '8px', textAlign: 'right' }}>MONTO RESTANTE ($)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {facturaSeleccionada.items.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} style={{ textAlign: 'center', padding: '20px', color: '#64748b' }}>No hay registros de vehículos para este concesionario en esta semana.</td>
+                <div style={{ borderTop: '4px solid #D96B27', paddingTop: '12px', marginBottom: '15px' }}>
+                  <h2 style={{ margin: '0 0 6px 0', fontSize: '22px', fontWeight: '900', color: '#000000', letterSpacing: '0.5px' }}>DETALLE DE CORTE SEMANAL</h2>
+                  <p style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: '#D96B27' }}>REPORTE OFICIAL DE PAGO</p>
+                </div>
+
+                <div style={{ display: 'flex', borderLeft: '4px solid #D96B27', paddingLeft: '12px', marginTop: '20px', marginBottom: '30px', gap: '60px' }}>
+                  <div>
+                    <span style={{ fontSize: '10px', color: '#475569', fontWeight: 'bold', display: 'block', marginBottom: '2px' }}>CORTE / N° DE SEMANA:</span>
+                    <span style={{ fontSize: '15px', fontWeight: 'bold', color: '#000000' }}>Corte #{semanaSeleccionadaId}-2026</span>
+                    <div style={{ borderBottom: '1px dotted #94a3b8', width: '220px', marginTop: '4px' }}></div>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '10px', color: '#475569', fontWeight: 'bold', display: 'block', marginBottom: '2px' }}>CONCESIONARIO:</span>
+                    <span style={{ fontSize: '15px', fontWeight: 'bold', color: '#000000' }}>{facturaSeleccionada.sede}</span>
+                    <div style={{ borderBottom: '1px dotted #94a3b8', width: '260px', marginTop: '4px' }}></div>
+                  </div>
+                </div>
+
+                <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '40px', fontSize: '12px', textAlign: 'left' }}>
+                  <thead>
+                    <tr style={{ color: '#64748b', borderBottom: '1px solid #cbd5e1' }}>
+                      <th style={{ padding: '8px 4px', fontWeight: 'bold' }}>MARCA</th>
+                      <th style={{ padding: '8px 4px', fontWeight: 'bold' }}>MODELO</th>
+                      <th style={{ padding: '8px 4px', fontWeight: 'bold' }}>CERTIFICADO</th>
+                      <th style={{ padding: '8px 4px', fontWeight: 'bold' }}>PRECIO LISTA</th>
+                      <th style={{ padding: '8px 4px', fontWeight: 'bold' }}>INICIAL RECIBIDA</th>
+                      <th style={{ padding: '8px 4px', fontWeight: 'bold' }}>MONTO RESTANTE</th>
                     </tr>
-                  ) : (
-                    facturaSeleccionada.items.map((item, i) => (
-                      <tr key={i} style={{ borderBottom: '1px solid #cbd5e1' }}>
-                        <td style={{ padding: '8px', fontWeight: 'bold' }}>{item.marca}[cite: 16]</td>
-                        <td style={{ padding: '8px' }}>{item.moto}[cite: 16]</td>
-                        <td style={{ padding: '8px', fontFamily: 'monospace' }}>{item.certificado}[cite: 16]</td>
-                        <td style={{ padding: '8px', textAlign: 'right' }}>{Number(item.costoConcesionario || 0).toLocaleString('es-VE', { minimumFractionDigits: 2 })}[cite: 16]</td>
-                        <td style={{ padding: '8px', textAlign: 'right', color: '#0284c7' }}>{Number(item.inicial || 0).toLocaleString('es-VE', { minimumFractionDigits: 2 })}[cite: 16]</td>
-                        <td style={{ padding: '8px', textAlign: 'right', fontWeight: 'bold', color: '#16a34a' }}>{Number(item.pagoConcesionario || 0).toLocaleString('es-VE', { minimumFractionDigits: 2 })}[cite: 16]</td>
+                  </thead>
+                  <tbody>
+                    {facturaSeleccionada.items.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} style={{ textAlign: 'center', padding: '25px', color: '#64748b' }}>No hay registros de vehículos para este concesionario en esta semana.</td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      facturaSeleccionada.items.map((item, i) => (
+                        <tr key={i} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                          <td style={{ padding: '12px 4px', fontWeight: 'bold', color: '#000' }}>{item.marca}</td>
+                          <td style={{ padding: '12px 4px', color: '#000' }}>{item.moto}</td>
+                          <td style={{ padding: '12px 4px', fontFamily: 'monospace', color: '#000' }}>{item.certificado}</td>
+                          <td style={{ padding: '12px 4px', color: '#000' }}>{Number(item.costoConcesionario || 0).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                          <td style={{ padding: '12px 4px', color: '#000' }}>{Number(item.inicial || 0).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                          <td style={{ padding: '12px 4px', fontWeight: 'bold', color: '#000' }}>{Number(item.pagoConcesionario || 0).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f1f5f9', padding: '15px', borderRadius: '6px', borderTop: '3px solid #D96B27' }}>
-                <span style={{ fontSize: '13px', color: '#475569', fontStyle: 'italic' }}>✓ Documento aprobado por el departamento de Partner Management[cite: 16]</span>
-                <div style={{ textAlign: 'right' }}>
-                  <span style={{ fontSize: '11px', display: 'block', fontWeight: 'bold', color: '#475569' }}>TOTAL A RECIBIR</span>
-                  <h2 style={{ margin: '2px 0 0 0', fontSize: '22px', color: '#16a34a' }}>
-                    $ {facturaSeleccionada.totalPago.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}[cite: 16]
-                  </h2>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '35px' }}>
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#D96B27', display: 'block', marginBottom: '2px' }}>TOTAL A RECIBIR</span>
+                    <h2 style={{ margin: 0, fontSize: '26px', fontWeight: 'bold', color: '#475569' }}>
+                      $ {facturaSeleccionada.totalPago.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </h2>
+                  </div>
                 </div>
-              </div>
 
-              <div style={{ marginTop: '20px', textAlign: 'center' }}>
-                <button onClick={() => window.print()} style={{ background: '#D96B27', color: '#fff', border: 'none', padding: '10px 24px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}>
-                  🖨️ Imprimir / Guardar Factura PDF
-                </button>
+                <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '20px', textAlign: 'center' }}>
+                  <span style={{ color: '#15803d', fontWeight: 'bold', fontSize: '13px' }}>
+                    ✓ Documento aprobado por el departamento de Partner Management
+                  </span>
+                </div>
+
+                <div style={{ marginTop: '30px', fontSize: '10px', color: '#94a3b8', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>file:///C:/Users/user/Downloads/Control_Cortes_2026.html.html</span>
+                  <span>1/1</span>
+                </div>
               </div>
 
             </div>
@@ -590,7 +619,7 @@ export default function RueddaControlArrendamiento() {
           </div>
         )}
 
-        {/* 2. VENTANA: REPORTE DE PAGO (Con Pendiente y Botón de Factura) */}
+        {/* 2. VENTANA: REPORTE DE PAGO */}
         {activeTab === 'pagos' && (
           <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '20px', maxWidth: '1000px' }}>
             <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', color: '#D96B27' }}>Sincronización y Liquidación por Sede — {semanaActualObj.label}[cite: 15]</h3>
