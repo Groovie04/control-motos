@@ -327,7 +327,15 @@ export default function RueddaControlArrendamiento() {
               onClick={() => setMenuRetraido(!menuRetraido)} 
               title={menuRetraido ? "Expandir Menú" : "Contraer Menú"}
               style={{ background: '#334155', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '14px', margin: menuRetraido ? '0 auto' : 0 }}>
-              {menuRetraido ? '▶' : '◀'}
+              {menuRetraido ? (
+  <span style={{ fontWeight: 900, fontSize: '16px', color: '#D96B27' }}>R*</span>
+) : (
+  <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+    <span style={{ fontWeight: 900, fontSize: '16px', color: '#D96B27' }}>R</span>
+    <span style={{ fontWeight: 700, fontSize: '12px', color: '#fff' }}>*</span>
+    <span style={{ fontSize: '12px', marginLeft: '4px' }}>◀</span>
+  </div>
+)}
             </button>
           </div>
 
