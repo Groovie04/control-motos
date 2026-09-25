@@ -20,6 +20,13 @@ export default function RueddaControlArrendamiento() {
     'SUPER MOTOS TROPICAL C.A'
   ]);
 
+  const [listaMarcas, setListaMarcas] = useState([
+    'Escuda',
+    'Empire Keeway',
+    'Haojue',
+    'Bera'
+  ]);
+
   const [listaMotos, setListaMotos] = useState([
     'F16-EXTREME',
     'CG-HERO',
@@ -43,36 +50,35 @@ export default function RueddaControlArrendamiento() {
     'Sábado'
   ]);
 
-  // Fecha actual formateada (DD/MM/YYYY) para sugerencia inicial automática
-  const obtenerFechaActual = () => {
+  // Fecha actual en formato YYYY-MM-DD para el input tipo date nativo
+  const obtenerFechaISOActual = () => {
     const d = new Date();
-    const dia = String(d.getDate()).padStart(2, '0');
-    const mes = String(d.getMonth() + 1).padStart(2, '0');
-    const anio = d.getFullYear();
-    return `${dia}/${mes}/${anio}`;
+    return d.toISOString().split('T')[0];
   };
 
-  // Estado del formulario de nueva venta
+  // Estado del formulario de nueva venta en el orden solicitado
   const [nuevaVenta, setNuevaVenta] = useState({
-    fecha: obtenerFechaActual(),
+    fecha: obtenerFechaISOActual(),
     concesionario: 'Motores Del Este VIP C.A.',
     plan: '6 Meses - Semanal',
     cliente: '',
-    telefono: '',
+    inicial: 0,
     cuota: 'Lunes',
     canon: 0,
-    inicial: 0,
+    marca: 'Escuda',
     moto: 'F16-EXTREME',
     imei: '',
+    certificado: '',
     costoConcesionario: 0,
-    pagoConcesionario: 0
+    pagoConcesionario: 0,
+    proyeccionInteres: 0
   });
 
   // Estado del Registro Maestro de Flota / Ventas
   const [flota, setFlota] = useState([
-    { fecha: '10/08/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Alberto Rafael Salas Martinez', telefono: '584167171297', cuota: 'Lunes', canon: 109.27, inicial: 440.00, marca: 'Escuda', moto: 'F16-EXTREME', fechaCorte: '13/08/2026', imei: '863874086467440', certificado: 'AA-1278490', costoConcesionario: 1600.00, pagoConcesionario: 1160.00 },
-    { fecha: '11/08/2026', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Freddy David Perez Peña', telefono: '584126034365', cuota: 'Martes', canon: 68.98, inicial: 277.75, marca: 'Escuda', moto: 'CG-HERO', fechaCorte: '', imei: '863874086280066', certificado: 'AA-1329061', costoConcesionario: 1010.00, pagoConcesionario: 732.25 },
-    { fecha: '11/08/2026', concesionario: 'INVERSIONES CHT30, C.A', plan: '6 Meses - Semanal', cliente: 'Marcos Sleyder Bozo Perez', telefono: '584243571388', cuota: 'Viernes', canon: 125.66, inicial: 506.00, marca: 'Escuda', moto: 'F16-EXTREME', fechaCorte: '', imei: '863874086467614', certificado: 'AA-1329414', costoConcesionario: 1840.00, pagoConcesionario: 1334.00 }
+    { fecha: '2026-08-10', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Alberto Rafael Salas Martinez', inicial: 440.00, cuota: 'Lunes', canon: 109.27, marca: 'Escuda', moto: 'F16-EXTREME', imei: '863874086467440', certificado: 'AA-1278490', costoConcesionario: 1600.00, pagoConcesionario: 1160.00, proyeccionInteres: 2305.56 },
+    { fecha: '2026-08-11', concesionario: 'Motores Del Este VIP C.A.', plan: '6 Meses - Semanal', cliente: 'Freddy David Perez Peña', inicial: 277.75, cuota: 'Martes', canon: 68.98, marca: 'Escuda', moto: 'CG-HERO', imei: '863874086280066', certificado: 'AA-1329061', costoConcesionario: 1010.00, pagoConcesionario: 732.25, proyeccionInteres: 1455.97 },
+    { fecha: '2026-08-11', concesionario: 'INVERSIONES CHT30, C.A', plan: '6 Meses - Semanal', cliente: 'Marcos Sleyder Bozo Perez', inicial: 506.00, cuota: 'Viernes', canon: 125.66, marca: 'Escuda', moto: 'F16-EXTREME', imei: '863874086467614', certificado: 'AA-1329414', costoConcesionario: 1840.00, pagoConcesionario: 1334.00, proyezccionInteres: 2651.39 }
   ]);
 
   const [sedesConfig, setSedesConfig] = useState([
@@ -86,22 +92,37 @@ export default function RueddaControlArrendamiento() {
     { sede: 'SUPER MOTOS TROPICAL C.A', pen: 0.00 }
   ]);
 
-  // Actualización automática de Pago Concesionario al cambiar Costo o Inicial
-  const handleCostoOInicialChange = (campo: 'costoConcesionario' | 'inicial', valor: number) => {
-    const costo = campo === 'costoConcesionario' ? valor : nuevaVenta.costoConcesionario;
-    const inicial = campo === 'inicial' ? valor : nuevaVenta.inicial;
+  // Recálculo automático de Pago Concesionario y Proyección de Interés
+  const actualizarCalculosFormulario = (cambios: Partial<typeof nuevaVenta>) => {
+    const estadoActualizado = { ...nuevaVenta, ...cambios };
+    const costo = Number(estadoActualizado.costoConcesionario) || 0;
+    const inicial = Number(estadoActualizado.inicial) || 0;
+    
+    // Pago Concesionario = Costo Concesionario - Inicial
     const pagoAuto = Math.max(0, costo - inicial);
 
+    // Proyección de Interés = (costo_concesionario * 91.41%) + costo_concesionario - inicial - pago_concesionario
+    const proyeccionAuto = (costo * 0.9141) + costo - inicial - pagoAuto;
+
     setNuevaVenta({
-      ...nuevaVenta,
-      [campo]: valor,
-      pagoConcesionario: pagoAuto
+      ...estadoActualizado,
+      pagoConcesionario: Number(pagoAuto.toFixed(2)),
+      proyeccionInteres: Number(proyeccionAuto.toFixed(2))
     });
   };
 
   const handleFlotaChange = (index: number, field: string, value: any) => {
     const nuevaFlota = [...flota];
     nuevaFlota[index] = { ...nuevaFlota[index], [field]: value };
+    
+    // Si modifican costo, inicial o pago en la tabla, recalcular proyección automáticamente si aplica
+    if (['costoConcesionario', 'inicial', 'pagoConcesionario'].includes(field)) {
+      const c = Number(nuevaFlota[index].costoConcesionario) || 0;
+      const i = Number(nuevaFlota[index].inicial) || 0;
+      const p = Number(nuevaFlota[index].pagoConcesionario) || 0;
+      nuevaFlota[index].proyeccionInteres = Number(((c * 0.9141) + c - i - p).toFixed(2));
+    }
+
     setFlota(nuevaFlota);
   };
 
@@ -119,49 +140,50 @@ export default function RueddaControlArrendamiento() {
       return;
     }
 
-    // Agregar concesionario a la lista desplegable si es nuevo
     if (!listaConcesionarios.includes(nuevaVenta.concesionario)) {
       setListaConcesionarios([...listaConcesionarios, nuevaVenta.concesionario]);
     }
-
-    // Agregar modelo de moto a la lista si es nuevo
+    if (!listaMarcas.includes(nuevaVenta.marca)) {
+      setListaMarcas([...listaMarcas, nuevaVenta.marca]);
+    }
     if (!listaMotos.includes(nuevaVenta.moto)) {
       setListaMotos([...listaMotos, nuevaVenta.moto]);
     }
 
     const itemAAgregar = {
-      fecha: nuevaVenta.fecha || obtenerFechaActual(),
+      fecha: nuevaVenta.fecha || obtenerFechaISOActual(),
       concesionario: nuevaVenta.concesionario,
       plan: nuevaVenta.plan,
       cliente: nuevaVenta.cliente,
-      telefono: nuevaVenta.telefono,
+      inicial: Number(nuevaVenta.inicial) || 0,
       cuota: nuevaVenta.cuota,
       canon: Number(nuevaVenta.canon) || 0,
-      inicial: Number(nuevaVenta.inicial) || 0,
-      marca: 'Escuda',
+      marca: nuevaVenta.marca,
       moto: nuevaVenta.moto,
-      fechaCorte: '',
       imei: nuevaVenta.imei,
-      certificado: 'AA-' + Math.floor(100000 + Math.random() * 900000),
+      certificado: nuevaVenta.certificado || ('AA-' + Math.floor(100000 + Math.random() * 900000)),
       costoConcesionario: Number(nuevaVenta.costoConcesionario) || 0,
-      pagoConcesionario: Number(nuevaVenta.pagoConcesionario) || 0
+      pagoConcesionario: Number(nuevaVenta.pagoConcesionario) || 0,
+      proyeccionInteres: Number(nuevaVenta.proyeccionInteres) || 0
     };
 
     setFlota([itemAAgregar, ...flota]);
     setShowModal(false);
     setNuevaVenta({
-      fecha: obtenerFechaActual(),
+      fecha: obtenerFechaISOActual(),
       concesionario: listaConcesionarios[0],
       plan: listaPlanes[0],
       cliente: '',
-      telefono: '',
+      inicial: 0,
       cuota: listaDias[0],
       canon: 0,
-      inicial: 0,
+      marca: listaMarcas[0],
       moto: listaMotos[0],
       imei: '',
+      certificado: '',
       costoConcesionario: 0,
-      pagoConcesionario: 0
+      pagoConcesionario: 0,
+      proyeccionInteres: 0
     });
   };
 
@@ -188,6 +210,7 @@ export default function RueddaControlArrendamiento() {
 
   const totalCostoConcesionario = flota.reduce((acc, curr) => acc + (Number(curr.costoConcesionario) || 0), 0);
   const totalPagoConcesionario = flota.reduce((acc, curr) => acc + (Number(curr.pagoConcesionario) || 0), 0);
+  const totalProyeccionInteres = flota.reduce((acc, curr) => acc + (Number(curr.proyeccionInteres) || 0), 0);
   const totalPagoCorte = sedesCalculadas.reduce((acc, curr) => acc + curr.pagoCorte, 0);
   const totalComisionSedes = sedesCalculadas.reduce((acc, curr) => acc + curr.comision, 0);
   const totalPenSedes = sedesCalculadas.reduce((acc, curr) => acc + curr.pen, 0);
@@ -252,10 +275,10 @@ export default function RueddaControlArrendamiento() {
           </button>
         </div>
 
-        {/* MODAL / CUADRO MEJORADO CON DESPLEGABLES Y CÁLCULO AUTOMÁTICO */}
+        {/* MODAL / CUADRO CON CALENDARIO, ORDEN EXACTO Y CÁLCULOS AUTOMÁTICOS */}
         {showModal && (
           <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-            <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '10px', padding: '25px', width: '620px', maxWidth: '90%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
+            <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '10px', padding: '25px', width: '680px', maxWidth: '90%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', borderBottom: `1px solid ${borderColor}`, paddingBottom: '10px' }}>
                 <h3 style={{ margin: 0, color: '#D96B27', fontSize: '17px' }}>Registrar Nueva Venta de Flota 💚</h3>
                 <button onClick={() => setShowModal(false)} style={{ background: 'transparent', border: 'none', color: textMain, fontSize: '18px', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
@@ -263,24 +286,24 @@ export default function RueddaControlArrendamiento() {
 
               <form onSubmit={handleAgregarVentaSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
                 
-                {/* FECHA (Automática editable) */}
+                {/* 1. FECHA (Calendario desplegable nativo) */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Fecha</label>
                   <input 
-                    type="text" 
+                    type="date" 
                     value={nuevaVenta.fecha} 
-                    onChange={e => setNuevaVenta({...nuevaVenta, fecha: e.target.value})} 
+                    onChange={e => actualizarCalculosFormulario({ fecha: e.target.value })} 
                     style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} 
                     required 
                   />
                 </div>
 
-                {/* CONCESIONARIO (Desplegable con opción de escribir nuevo) */}
+                {/* 2. CONCESIONARIO */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Concesionario</label>
                   <select 
                     value={nuevaVenta.concesionario} 
-                    onChange={e => setNuevaVenta({...nuevaVenta, concesionario: e.target.value})} 
+                    onChange={e => actualizarCalculosFormulario({ concesionario: e.target.value })} 
                     style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }}>
                     {listaConcesionarios.map((c, i) => (
                       <option key={i} value={c}>{c}</option>
@@ -288,12 +311,12 @@ export default function RueddaControlArrendamiento() {
                   </select>
                 </div>
 
-                {/* PLAN (Desplegable) */}
+                {/* 3. PLAN */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Plan</label>
                   <select 
                     value={nuevaVenta.plan} 
-                    onChange={e => setNuevaVenta({...nuevaVenta, plan: e.target.value})} 
+                    onChange={e => actualizarCalculosFormulario({ plan: e.target.value })} 
                     style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }}>
                     {listaPlanes.map((p, i) => (
                       <option key={i} value={p}>{p}</option>
@@ -301,24 +324,24 @@ export default function RueddaControlArrendamiento() {
                   </select>
                 </div>
 
-                {/* NOMBRE CLIENTE */}
+                {/* 4. NOMBRE DEL CLIENTE */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Nombre del Cliente</label>
-                  <input type="text" placeholder="Nombre completo" value={nuevaVenta.cliente} onChange={e => setNuevaVenta({...nuevaVenta, cliente: e.target.value})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} required />
+                  <input type="text" placeholder="Nombre completo" value={nuevaVenta.cliente} onChange={e => actualizarCalculosFormulario({ cliente: e.target.value })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} required />
                 </div>
 
-                {/* NRO CLIENTE */}
+                {/* 5. INICIAL ($) */}
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Nro. Cliente (Teléfono)</label>
-                  <input type="text" placeholder="Ej: 584126000000" value={nuevaVenta.telefono} onChange={e => setNuevaVenta({...nuevaVenta, telefono: e.target.value})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Inicial ($)</label>
+                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.inicial || ''} onChange={e => actualizarCalculosFormulario({ inicial: parseFloat(e.target.value) || 0 })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
                 </div>
 
-                {/* DÍA DE CUOTA (Desplegable) */}
+                {/* 6. DÍA DE CUOTA */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Día de Cuota</label>
                   <select 
                     value={nuevaVenta.cuota} 
-                    onChange={e => setNuevaVenta({...nuevaVenta, cuota: e.target.value})} 
+                    onChange={e => actualizarCalculosFormulario({ cuota: e.target.value })} 
                     style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }}>
                     {listaDias.map((d, i) => (
                       <option key={i} value={d}>{d}</option>
@@ -326,24 +349,31 @@ export default function RueddaControlArrendamiento() {
                   </select>
                 </div>
 
-                {/* CANON SEMANAL */}
+                {/* 7. CANON SEMANAL ($) */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Canon Semanal ($)</label>
-                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.canon || ''} onChange={e => setNuevaVenta({...nuevaVenta, canon: parseFloat(e.target.value) || 0})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.canon || ''} onChange={e => actualizarCalculosFormulario({ canon: parseFloat(e.target.value) || 0 })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
                 </div>
 
-                {/* INICIAL (Afecta cálculo automático) */}
+                {/* 8. MARCA */}
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Inicial ($)</label>
-                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.inicial || ''} onChange={e => handleCostoOInicialChange('inicial', parseFloat(e.target.value) || 0)} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Marca</label>
+                  <select 
+                    value={nuevaVenta.marca} 
+                    onChange={e => actualizarCalculosFormulario({ marca: e.target.value })} 
+                    style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }}>
+                    {listaMarcas.map((m, i) => (
+                      <option key={i} value={m}>{m}</option>
+                    ))}
+                  </select>
                 </div>
 
-                {/* MODELO DE MOTO (Desplegable) */}
+                {/* 9. MOTO */}
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Modelo de Moto</label>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Moto</label>
                   <select 
                     value={nuevaVenta.moto} 
-                    onChange={e => setNuevaVenta({...nuevaVenta, moto: e.target.value})} 
+                    onChange={e => actualizarCalculosFormulario({ moto: e.target.value })} 
                     style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }}>
                     {listaMotos.map((m, i) => (
                       <option key={i} value={m}>{m}</option>
@@ -351,27 +381,45 @@ export default function RueddaControlArrendamiento() {
                   </select>
                 </div>
 
-                {/* IMEI GPS */}
+                {/* 10. IMEI GPS */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>IMEI GPS</label>
-                  <input type="text" placeholder="Número de IMEI" value={nuevaVenta.imei} onChange={e => setNuevaVenta({...nuevaVenta, imei: e.target.value})} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} required />
+                  <input type="text" placeholder="Número de IMEI" value={nuevaVenta.imei} onChange={e => actualizarCalculosFormulario({ imei: e.target.value })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} required />
                 </div>
 
-                {/* COSTO CONCESIONARIO (Afecta cálculo automático) */}
+                {/* 11. N° DE CERTIFICADO */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>N° de Certificado</label>
+                  <input type="text" placeholder="Ej: AA-1278490 (Opcional)" value={nuevaVenta.certificado} onChange={e => actualizarCalculosFormulario({ certificado: e.target.value })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                </div>
+
+                {/* 12. COSTO CONCESIONARIO ($) */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8 }}>Costo Concesionario ($)</label>
-                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.costoConcesionario || ''} onChange={e => handleCostoOInicialChange('costoConcesionario', parseFloat(e.target.value) || 0)} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
+                  <input type="number" step="0.01" placeholder="0.00" value={nuevaVenta.costoConcesionario || ''} onChange={e => actualizarCalculosFormulario({ costoConcesionario: parseFloat(e.target.value) || 0 })} style={{ width: '100%', background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '8px', borderRadius: '4px' }} />
                 </div>
 
-                {/* PAGO CONCESIONARIO (Restado automáticamente: Costo - Inicial) */}
+                {/* 13. PAGO A CONCESIONARIO ($ Automático) */}
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8, color: '#10b981', fontWeight: 'bold' }}>Pago Concesionario ($ automático)</label>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8, color: '#10b981', fontWeight: 'bold' }}>Pago a Concesionario ($ automático)</label>
                   <input 
                     type="number" 
                     step="0.01" 
                     value={nuevaVenta.pagoConcesionario || 0} 
                     readOnly
                     style={{ width: '100%', background: isDark ? '#11221c' : '#d1fae5', color: '#10b981', border: `1px solid #10b981`, padding: '8px', borderRadius: '4px', fontWeight: 'bold' }} 
+                  />
+                </div>
+
+                {/* 14. PROYECCIÓN DEL INTERÉS ($ Automático) */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', opacity: 0.8, color: '#38bdf8', fontWeight: 'bold' }}>Proyección del Interés ($)</label>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    value={nuevaVenta.proyeccionInteres || 0} 
+                    readOnly
+                    style={{ width: '100%', background: isDark ? '#162330' : '#e0f2fe', color: '#38bdf8', border: `1px solid #38bdf8`, padding: '8px', borderRadius: '4px', fontWeight: 'bold' }} 
                   />
                 </div>
 
@@ -402,40 +450,39 @@ export default function RueddaControlArrendamiento() {
                   <th style={{ padding: '10px' }}>Concesionario</th>
                   <th style={{ padding: '10px' }}>Plan</th>
                   <th style={{ padding: '10px' }}>Nombre del Cliente</th>
-                  <th style={{ padding: '10px' }}>Nro. Cliente</th>
+                  <th style={{ padding: '10px' }}>Inicial</th>
                   <th style={{ padding: '10px' }}>Día Cuota</th>
                   <th style={{ padding: '10px' }}>Canon Semanal</th>
-                  <th style={{ padding: '10px' }}>Inicial</th>
+                  <th style={{ padding: '10px' }}>Marca</th>
                   <th style={{ padding: '10px' }}>Moto</th>
                   <th style={{ padding: '10px' }}>IMEI GPS</th>
+                  <th style={{ padding: '10px' }}>N° Certificado</th>
                   <th style={{ padding: '10px' }}>Costo Concesionario</th>
-                  <th style={{ padding: '10px' }}>Pago Concesionario</th>
-                  <th style={{ padding: '10px' }}>Comisión (1%)</th>
+                  <th style={{ padding: '10px' }}>Pago a Concesionario</th>
+                  <th style={{ padding: '10px' }}>Proyección Interés</th>
                 </tr>
               </thead>
               <tbody>
-                {flota.map((item, index) => {
-                  const comision1Porc = (Number(item.costoConcesionario) || 0) * 0.01;
-                  return (
-                    <tr key={index} style={{ borderBottom: `1px solid ${borderColor}`, background: index % 2 === 0 ? (isDark ? '#1e1e1e' : '#ffffff') : (isDark ? '#161616' : '#f8fafc') }}>
-                      <td style={{ padding: '6px' }}><input type="text" value={item.fecha} onChange={(e) => handleFlotaChange(index, 'fecha', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="text" value={item.concesionario} onChange={(e) => handleFlotaChange(index, 'concesionario', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '160px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="text" value={item.plan} onChange={(e) => handleFlotaChange(index, 'plan', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '110px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="text" value={item.cliente} onChange={(e) => handleFlotaChange(index, 'cliente', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '160px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="text" value={item.telefono} onChange={(e) => handleFlotaChange(index, 'telefono', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '100px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="text" value={item.cuota} onChange={(e) => handleFlotaChange(index, 'cuota', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '75px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="number" value={item.canon} onChange={(e) => handleFlotaChange(index, 'canon', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '80px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="number" value={item.inicial} onChange={(e) => handleFlotaChange(index, 'inicial', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '80px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="text" value={item.moto} onChange={(e) => handleFlotaChange(index, 'moto', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="text" value={item.imei} onChange={(e) => handleFlotaChange(index, 'imei', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '120px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="number" value={item.costoConcesionario} onChange={(e) => handleFlotaChange(index, 'costoConcesionario', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
-                      <td style={{ padding: '6px' }}><input type="number" value={item.pagoConcesionario} onChange={(e) => handleFlotaChange(index, 'pagoConcesionario', parseFloat(e.target.value))} style={{ background: inputBg, color: '#10b981', fontWeight: 'bold', border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
-                      <td style={{ padding: '6px', color: '#38bdf8', fontWeight: 'bold' }}>
-                        ${comision1Porc.toFixed(2)}
-                      </td>
-                    </tr>
-                  );
-                })}
+                {flota.map((item, index) => (
+                  <tr key={index} style={{ borderBottom: `1px solid ${borderColor}`, background: index % 2 === 0 ? (isDark ? '#1e1e1e' : '#ffffff') : (isDark ? '#161616' : '#f8fafc') }}>
+                    <td style={{ padding: '6px' }}><input type="date" value={item.fecha} onChange={(e) => handleFlotaChange(index, 'fecha', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '125px' }} /></td>
+                    <td style={{ padding: '6px' }}><input type="text" value={item.concesionario} onChange={(e) => handleFlotaChange(index, 'concesionario', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '150px' }} /></td>
+                    <td style={{ padding: '6px' }}><input type="text" value={item.plan} onChange={(e) => handleFlotaChange(index, 'plan', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '110px' }} /></td>
+                    <td style={{ padding: '6px' }}><input type="text" value={item.cliente} onChange={(e) => handleFlotaChange(index, 'cliente', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '150px' }} /></td>
+                    <td style={{ padding: '6px' }}><input type="number" value={item.inicial} onChange={(e) => handleFlotaChange(index, 'inicial', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '80px' }} /></td>
+                    <td style={{ padding: '6px' }}><input type="text" value={item.cuota} onChange={(e) => handleFlotaChange(index, 'cuota', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '75px' }} /></td>
+                    <td style={{ padding: '6px' }}><input type="number" value={item.canon} onChange={(e) => handleFlotaChange(index, 'canon', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '80px' }} /></td>
+                    <td style={{ padding: '6px' }}><input type="text" value={item.marca} onChange={(e) => handleFlotaChange(index, 'marca', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
+                    <td style={{ padding: '6px' }}><input type="text" value={item.moto} onChange={(e) => handleFlotaChange(index, 'moto', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
+                    <td style={{ padding: '6px' }}><input type="text" value={item.imei} onChange={(e) => handleFlotaChange(index, 'imei', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '110px' }} /></td>
+                    <td style={{ padding: '6px' }}><input type="text" value={item.certificado} onChange={(e) => handleFlotaChange(index, 'certificado', e.target.value)} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '95px' }} /></td>
+                    <td style={{ padding: '6px' }}><input type="number" value={item.costoConcesionario} onChange={(e) => handleFlotaChange(index, 'costoConcesionario', parseFloat(e.target.value))} style={{ background: inputBg, color: inputText, border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
+                    <td style={{ padding: '6px' }}><input type="number" value={item.pagoConcesionario} onChange={(e) => handleFlotaChange(index, 'pagoConcesionario', parseFloat(e.target.value))} style={{ background: inputBg, color: '#10b981', fontWeight: 'bold', border: `1px solid ${inputBorder}`, padding: '4px', borderRadius: '4px', width: '90px' }} /></td>
+                    <td style={{ padding: '6px', color: '#38bdf8', fontWeight: 'bold' }}>
+                      ${Number(item.proyeccionInteres || 0).toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -514,8 +561,8 @@ export default function RueddaControlArrendamiento() {
                 <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0 0 0', color: '#10b981' }}>${totalCostoConcesionario.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</h2>
               </div>
               <div style={{ background: cardBg, border: `1px solid ${borderColor}`, padding: '20px', borderRadius: '8px', borderLeft: '4px solid #38bdf8' }}>
-                <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Comisiones Totales (1%)</p>
-                <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0 0 0', color: '#38bdf8' }}>${totalComisionSedes.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</h2>
+                <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>Proyección Total de Interés</p>
+                <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0 0 0', color: '#38bdf8' }}>${totalProyeccionInteres.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</h2>
               </div>
             </div>
 
@@ -569,7 +616,7 @@ export default function RueddaControlArrendamiento() {
 
             <div style={{ marginTop: '25px', padding: '14px', background: isDark ? '#1c1c38' : '#e0f2fe', borderRadius: '6px', borderLeft: '3px solid #0284c7' }}>
               <p style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: isDark ? '#38bdf8' : '#0369a1' }}>
-                💡 Estado del Sistema: Comisiones totales calculadas al 1% de la flota: <strong style={{ color: '#38bdf8' }}>${totalComisionSedes.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</strong> 🚗💨
+                💡 Estado del Sistema: Proyección total de intereses de la flota: <strong style={{ color: '#38bdf8' }}>${totalProyeccionInteres.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</strong> 🚗💨
               </p>
             </div>
           </div>
